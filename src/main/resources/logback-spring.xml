@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 60 초마다 설정파일의 변경을 확인 후 갱신 -->
+<configuration scan="true" scanPeriod="60 seconds">
+    <property name="LOG_DIR" value="./log"/>
+    <property resource="logback.properties"/>
+
+    <!-- file appender -->
+    <appender name="API" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${logging.mta.filename}</file>
+
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${logging.mta.file.logpattern}</pattern>
+        </encoder>
+
+        <!-- rolling 정책 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${logging.mta.filename}.%d{yyyy-MM-dd}.%i.log}</fileNamePattern>
+            <maxFileSize>${logging.mta.file.max-size:-10MB}</maxFileSize>
+            <maxHistory>${logging.mta.file.max-history:-7}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 에러의 경우 파일 로그 처리 -->
+    <appender name="WEB" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>error</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter -->
+
+        <file>${LOG_DIR}/${logging.web.filename}</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${logging.web.file.logpattern}</pattern>
+        </encoder>
+
+        <!-- rolling 정책 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${logging.web.filename}.%d{yyyy-MM-dd}.%i.log}</fileNamePattern>
+            <maxFileSize>${logging.web.file.max-size:-10MB}</maxFileSize>
+            <maxHistory>${logging.web.file.max-history:-7}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="QUERY" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${logging.query.filename}</file>
+
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${logging.query.file.logpattern}</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${logging.query.filename}.%d{yyyy-MM-dd}.%i.log}</fileNamePattern>
+            <maxFileSize>${logging.query.file.max-size:-10MB}</maxFileSize>
+            <maxHistory>${logging.query.file.max-history:-7}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 로거 설정 -->
+    <logger name="com.mail.smtp" level="TRACE" additivity="false">
+        <appender-ref ref="API"/>
+    </logger>
+
+    <!-- about hibernate query log -->
+
+    <!-- 쿼리 결과 : level 을 TRACE 로 변경하면 결과 로그가 생성된다. -->
+    <logger name="org.hibernate.type.descriptor.sql.BasicExtractor" level="DEBUG" additivity="false">
+        <appender-ref ref="QUERY"/>
+    </logger>
+
+    <!-- 쿼리 파라미터 -->
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
+        <appender-ref ref="QUERY"/>
+    </logger>
+
+    <!-- 쿼리문 -->
+    <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+        <appender-ref ref="QUERY"/>
+    </logger>
+
+    <logger name="org.springframework.core" level="INFO"/>
+    <logger name="org.springframework.beans" level="INFO"/>
+    <logger name="org.springframework.context" level="INFO"/>
+    <logger name="org.springframework.web" level="INFO"/>
+
+    <!-- root 레벨 설정 -->
+    <root level="DEBUG">
+        <appender-ref ref="WEB"/>
+    </root>
+</configuration>
+

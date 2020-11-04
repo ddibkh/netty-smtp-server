@@ -1,0 +1,31 @@
+logging:
+  level:
+    root: debug
+
+spring:
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+
+  jackson:
+    mapper:
+      DEFAULT_VIEW_INCLUSION: true
+
+  datasource:
+    url: jdbc:mysql://d6.deepsoft.net:3306/postian6db?serverTimezone=UTC
+    username: postian6
+    password: postian6
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 30
+      pool-name: hikari-cp
+      data-source-properties:
+        cachePreStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
