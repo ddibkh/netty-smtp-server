@@ -1,5 +1,7 @@
 package com.mail.smtp.util;
 
+import com.mail.smtp.mta.ApplicationContextProvider;
+import org.springframework.context.ApplicationContext;
 import org.springframework.util.DigestUtils;
 
 import java.net.InetAddress;
@@ -38,5 +40,20 @@ public class CommonUtil
         String ts = String.valueOf(System.currentTimeMillis());
         String rand = UUID.randomUUID().toString();
         return DigestUtils.md5DigestAsHex(( ts + rand).getBytes());
+    }
+
+    public static String getHostName()
+    {
+        String hostName;
+        try
+        {
+            hostName = InetAddress.getLocalHost().getHostName();
+        }
+        catch (java.net.UnknownHostException e)
+        {
+            hostName = "?";
+        }
+
+        return hostName;
     }
 }

@@ -17,7 +17,7 @@ import java.sql.SQLOutput;
 @Component
 @RequiredArgsConstructor
 @PropertySource(value = {
-        "file:config/smtp.cfg",
+        "file:config/smtp.properties",
 }, ignoreResourceNotFound = true)
 @Slf4j
 public class SmtpConfig

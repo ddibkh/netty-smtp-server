@@ -19,7 +19,7 @@ import java.security.KeyStore;
 public class SmtpSSLContext
 {
     private final SmtpConfig smtpConfig;
-    public SslContext sslContext() throws GeneralSecurityException, IOException
+    public SslContext sslContext(boolean bStartTls) throws GeneralSecurityException, IOException
     {
         String keyFile = smtpConfig.getString("smtp.cert.path", "keystore.jks");
         String keyPass = smtpConfig.getString("smtp.cert.password", "123456");
@@ -36,6 +36,7 @@ public class SmtpSSLContext
         SslContext sslContext = SslContextBuilder
                 .forServer(keyManagerFactory)
                 .protocols("TLSv1.2", "TLSv1.3")
+                .startTls(bStartTls)
                 .build();
         return sslContext;
     }

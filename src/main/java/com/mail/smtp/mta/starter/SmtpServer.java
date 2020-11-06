@@ -5,19 +5,21 @@
  * Modifier : kkwang
  */
 
-package com.mail.smtp.mta;
+package com.mail.smtp.mta.starter;
 
 import com.mail.smtp.config.SmtpConfig;
-import com.mail.smtp.mta.ssl.SSLServerInitializer;
+import com.mail.smtp.mta.initializer.MtaInitializer;
 import com.mail.smtp.mta.ssl.SmtpSSLContext;
 import com.mail.smtp.util.CommonUtil;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.ssl.SslContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -26,28 +28,27 @@ import java.security.GeneralSecurityException;
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class SmtpSSLServer
+public class SmtpServer
 {
 	private final SmtpSSLContext smtpSSLContext;
 	private final SmtpConfig smtpConfig;
 
-	public void start(String[] args) throws GeneralSecurityException, IOException
+	public void start() throws GeneralSecurityException, IOException
 	{
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(SmtpInitialize.class);
-		EventLoopGroup boss = ctx.getBean("bossGroup", EventLoopGroup.class);
-		EventLoopGroup work = ctx.getBean("workGroup", EventLoopGroup.class);
-		SslContext sslContext = smtpSSLContext.sslContext();
+		NioEventLoopGroup boss = new NioEventLoopGroup();
+		NioEventLoopGroup work = new NioEventLoopGroup();
+		//set starttls true
+		SslContext sslContext = smtpSSLContext.sslContext(true);
 
 		ServerBootstrap bootstrap = new ServerBootstrap();
 		bootstrap.group(boss, work)
 				.channel(NioServerSocketChannel.class)
 				.option(ChannelOption.SO_REUSEADDR, true)
-				//.handler(new LoggingHandler(LogLevel.INFO))
-				.childHandler(new SSLServerInitializer(sslContext));
+				.childHandler(new MtaInitializer(sslContext));
 
 		try
 		{
-			int port = smtpConfig.getInt("smtp.ssl.port", 465);
+			int port = smtpConfig.getInt("smtp.port", 25);
 			ChannelFuture cf = bootstrap.bind(CommonUtil.getLocalIP(), port).sync();
 			cf.channel().closeFuture().sync();
 		}
@@ -55,8 +56,12 @@ public class SmtpSSLServer
 		{
 			e.printStackTrace();
 		}
-		ctx.close();
+		finally
+		{
+			boss.shutdownGracefully();
+			work.shutdownGracefully();
+		}
 
-		log.info("end of ssl smtp server");
+		log.info("end of smtp server");
 	}
 }

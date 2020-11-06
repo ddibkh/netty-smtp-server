@@ -1,4 +1,4 @@
-package com.mail.smtp.mta;
+package com.mail.smtp.mta.handler;
 /*
  * Basic SMTP server in Java using Netty
  *
@@ -6,6 +6,7 @@ package com.mail.smtp.mta;
  * Modifier: kkwang
  */
 
+import com.mail.smtp.mta.SmtpData;
 import com.mail.smtp.util.CommonUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -43,16 +44,14 @@ public class SmtpSSLServerHandler extends SmtpServerHandler
                         String clientip = sa.getAddress().getHostAddress();
                         int port = sa.getPort();
 
-                        //randomUID = RandomStringUtils.randomNumeric(10);
-                        randomUID = CommonUtil.makeUID();
                         MDC.put("IP", clientip);
-                        MDC.put("UID", randomUID);
+                        MDC.put("UID", smtpData.getRandomUID());
 
                         getSmtpData().setClientIP(clientip);
                         getSmtpData().setClientPort(port);
                         log.info("ssl connected " + clientip + ":" + port);
-                        ctx.writeAndFlush("220 " + hostname + " ESMTP\r\n");
-                        log.info("[channelactive] send message : 220 " + hostname + " ESMTP");
+                        ctx.writeAndFlush("220 " + CommonUtil.getHostName() + " ESMTP\r\n");
+                        smtpData.setSecureConnected(true);
                     }
                 }
         );

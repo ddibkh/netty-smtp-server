@@ -4,55 +4,58 @@
  * Author: kkwang
  */
 
-package com.mail.smtp.mta;
+package com.mail.smtp.mta.handler;
 
+import com.mail.smtp.mta.SmtpData;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 
 @RequiredArgsConstructor
 @Slf4j
 public class SmtpDataHandler extends ChannelInboundHandlerAdapter
 {
-	private final SmtpServerHandler baseHandler;
+	private final SmtpData smtpData;
+	private final ChannelHandler baseHandler;
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx)
 	{
-		log.debug("smtp data handler active!! [" + toString() + "]");
+		log.trace("smtp data handler active!! [" + toString() + "]");
 	}
 	
 	@Override
     public void handlerAdded(ChannelHandlerContext ctx)
 	{
-    	log.info("handlerAdded [" + toString() + "]");
+    	log.trace("handlerAdded [" + toString() + "]");
     	//================================= DEBUG ================================= 
-    	log.info("clientip : " + baseHandler.getSmtpData().getClientIP());
-    	log.info("client port : " + baseHandler.getSmtpData().getClientPort());
-    	log.info("mail from : " + baseHandler.getSmtpData().getMailfrom());
-    	log.info("rcpt to: " + baseHandler.getSmtpData().getReceipents());
+    	log.info("clientip : " + smtpData.getClientIP());
+    	log.info("client port : " + smtpData.getClientPort());
+    	log.info("mail from : " + smtpData.getMailfrom());
+    	log.info("rcpt to: " + smtpData.getReceipents());
     	//================================= DEBUG =================================
     }
     
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx)
 	{
-    	log.info("handlerRemoved [" + toString() + "]");
+    	log.trace("handlerRemoved [" + toString() + "]");
     }
     
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg)
 	{
-		//logger.info("channelread for eml data receive [" + toString() + "]");
 		String line = (String)msg;
 		line += "\r\n";
-		//logger.info("data line : " + line);
+
 		if ( line.trim().equals(".") ) {
-            ctx.writeAndFlush("250 OK\r\n");
-			baseHandler.getSmtpData().setbCompleteData(true);
-            log.info("received data completed");
+			String response = "250 Message accepted for delivery";
+            ctx.writeAndFlush(response + "\r\n");
+			smtpData.setCompleteData(true);
             ChannelPipeline cp = ctx.pipeline();
             cp.replace("datahandler", "basehandler", baseHandler);
         }
@@ -62,9 +65,10 @@ public class SmtpDataHandler extends ChannelInboundHandlerAdapter
             	line = line.substring(1);
             }
 
-			baseHandler.getSmtpData().addMessage(line);
+			smtpData.addMessage(line);
         }
 	}
+
 	
 	@Override
 	public void channelReadComplete(ChannelHandlerContext ctx)
@@ -76,7 +80,10 @@ public class SmtpDataHandler extends ChannelInboundHandlerAdapter
 	@Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 	{
-    	cause.printStackTrace();
+		log.error("exception occured, {}", cause.getMessage());
+		if( log.isTraceEnabled() )
+    		cause.printStackTrace();
         ctx.close();
+		MDC.clear();
     }
 }

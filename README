@@ -1,0 +1,5 @@
+simple smtp using spring boot and netty
+
+vm option : -Dfile.encoding="UTF-8"
+
+계정 추가시 기본 mailbox 정보를 추가해야함.

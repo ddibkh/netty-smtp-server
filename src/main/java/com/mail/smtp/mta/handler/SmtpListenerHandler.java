@@ -4,7 +4,7 @@
  * Author: kkwang
  */
 
-package com.mail.smtp.mta;
+package com.mail.smtp.mta.handler;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;

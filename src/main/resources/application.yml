@@ -3,24 +3,23 @@ logging:
     root: debug
 
 spring:
+  h2:
+    console:
+      enabled: true
   jpa:
-    database: mysql
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
-
-  jackson:
-    mapper:
-      DEFAULT_VIEW_INCLUSION: true
+    generate-ddl: true
 
   datasource:
-    url: jdbc:mysql://d6.deepsoft.net:3306/postian6db?serverTimezone=UTC
-    username: postian6
-    password: postian6
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:h2:tcp://localhost/~/simplesmtp/db;DB_CLOSE_DELAY=-1
+    username: sa
+    password: sa
+    driver-class-name: org.h2.Driver
     hikari:
       maximum-pool-size: 30
       pool-name: hikari-cp
@@ -29,3 +28,11 @@ spring:
         prepStmtCacheSize: 250
         prepStmtCacheSqlLimit: 2048
         useServerPrepStmts: true
+    #schema: DDL.sql
+    data: DML.sql
+    initialization-mode: always
+
+
+  jackson:
+    mapper:
+      DEFAULT_VIEW_INCLUSION: true

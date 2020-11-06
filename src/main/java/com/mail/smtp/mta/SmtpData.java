@@ -1,109 +1,80 @@
 package com.mail.smtp.mta;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import com.mail.smtp.util.CommonUtil;
+import io.netty.handler.ssl.SslContext;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-@Component
-@Scope("prototype")
+@Slf4j
 public class SmtpData
 {
+	@Setter @Getter
 	private String clientIP;
+	@Setter @Getter
 	private int clientPort;
+	@Setter @Getter
 	private String mailfrom;
-	private Vector<String> vRcptTo = new Vector<String>(10);
+	@Setter @Getter
+	private List<String> listRcptTo = new ArrayList<>();
+	@Setter @Getter
 	private StringBuffer msg = new StringBuffer();
-	private boolean bCompleteData = false;
-
+	@Setter @Getter
 	private String subject;
 
-	public String getClientIP() {
-		return clientIP;
+	@Setter @Getter
+	private boolean secureConnected = false;
+	@Setter @Getter
+	private boolean completeData = false;
+	@Setter @Getter
+	private boolean authed = false;
+	@Getter
+	private final SslContext sslContext;
+
+	@Getter
+	private String randomUID;
+
+	public SmtpData(SslContext sslContext)
+	{
+		this.sslContext = sslContext;
+		init();
 	}
 
-	public void setClientIP(String clientIP) {
-		this.clientIP = clientIP;
+	public void init()
+	{
+		mailfrom = "";
+		listRcptTo.clear();
+		msg.setLength(0);
+		subject = "";
+		completeData = false;
+		randomUID = CommonUtil.makeUID();
 	}
 
-	public int getClientPort() {
-		return clientPort;
-	}
-
-	public void setClientPort(int clientPort) {
-		this.clientPort = clientPort;
-	}
-
-	public String getMailfrom() {
-		return mailfrom;
-	}
-
-	public void setMailfrom(String mailfrom) {
-		this.mailfrom = mailfrom;
-	}
-
-	public Vector<String> getvRcptTo() {
-		return vRcptTo;
-	}
-
-	public void setvRcptTo(Vector<String> vRcptTo) {
-		this.vRcptTo = vRcptTo;
-	}
-
-	public StringBuffer getMsg() {
-		return msg;
-	}
-
-	public void setMsg(StringBuffer msg) {
-		this.msg = msg;
-	}
-
-	public boolean isbCompleteData() {
-		return bCompleteData;
-	}
-
-	public void setbCompleteData(boolean bCompleteData) {
-		this.bCompleteData = bCompleteData;
-	}
-
-	public void addReceipent(String strTo) {
-		vRcptTo.add(strTo);
+	public void addReceipent(String strTo)
+	{
+		listRcptTo.add(strTo);
 	}
 	
-	public String getReceipents() {
-		if( !vRcptTo.isEmpty() )
-		{
-			StringBuilder sb = new StringBuilder();
-			Iterator<String> iter = vRcptTo.iterator();
-			while( iter.hasNext() )
-			{
-				sb.append(iter.next());
-				sb.append(',');
-			}
-			
-			if( sb.charAt(sb.length()-1) == ',' )
-				sb.deleteCharAt(sb.length()-1);
-			
-			return sb.toString();
-		}
-		
-		return "";
+	public String getReceipents()
+	{
+		Optional<String> receipents =
+				Optional.of(listRcptTo.stream().
+						map(String::valueOf).collect(Collectors.joining(",")));
+		return receipents.orElse("");
 	}
 	
-	public void addMessage(String strMessage) {
+	public void addMessage(String strMessage)
+	{
 		msg.append(strMessage);
 	}
 	
-	public String getMessage() {
+	public String getMessage()
+	{
 		return msg.toString();
-	}
-
-	public String getSubject() {
-		return subject;
-	}
-
-	public void setSubject(String subject) {
-		this.subject = subject;
 	}
 }
