@@ -7,7 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.springframework.stereotype.Component;
 
 @Component
-public class Quit
+public class QUIT
 {
     public void process(ChannelHandlerContext ctx)
     {

@@ -1,8 +1,5 @@
 /*
  * Basic SMTP server in Java using Netty
- *
- * Author: Maarten Oelering
- * Modifier : kkwang
  */
 
 package com.mail.smtp.mta.starter;
@@ -49,7 +46,9 @@ public class SmtpServer
 		try
 		{
 			int port = smtpConfig.getInt("smtp.port", 25);
-			ChannelFuture cf = bootstrap.bind(CommonUtil.getLocalIP(), port).sync();
+			String localIP = CommonUtil.getLocalIP();
+			ChannelFuture cf = bootstrap.bind(localIP, port).sync();
+			log.info("start smtp {}", localIP);
 			cf.channel().closeFuture().sync();
 		}
 		catch(Exception e)

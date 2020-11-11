@@ -1,14 +1,13 @@
 package com.mail.smtp.mta.protocol;
 
-import com.mail.smtp.mta.SmtpData;
+import com.mail.smtp.mta.data.SmtpData;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.ssl.SslHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class StartTls
+public class STARTTLS
 {
     public void process(ChannelHandlerContext ctx, SmtpData smtpData)
     {

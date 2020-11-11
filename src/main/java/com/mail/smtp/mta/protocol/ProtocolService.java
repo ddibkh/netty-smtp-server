@@ -1,6 +1,7 @@
 package com.mail.smtp.mta.protocol;
 
-import com.mail.smtp.mta.SmtpData;
+import com.mail.smtp.exception.SmtpException;
+import com.mail.smtp.mta.data.SmtpData;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,16 +12,16 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ProtocolService implements IProtocol
 {
-    private final Auth auth;
-    private final Data data;
-    private final Ehlo ehlo;
-    private final Helo helo;
-    private final MailFrom mailFrom;
-    private final RcptTo rcptTo;
-    private final Rset rset;
-    private final StartTls startTls;
-    private final Quit quit;
-    private final Noop noop;
+    private final AUTH auth;
+    private final DATA data;
+    private final EHLO ehlo;
+    private final HELO helo;
+    private final MAILFROM mailFrom;
+    private final RCPTTO rcptTo;
+    private final RSET rset;
+    private final STARTTLS startTls;
+    private final QUIT quit;
+    private final NOOP noop;
 
     @Override
     public void process(ChannelHandlerContext ctx, String message, SmtpData smtpData)
@@ -49,33 +50,31 @@ public class ProtocolService implements IProtocol
             }
         }
 
-        command.trim();
-        commandData.trim();
+        command = command.trim();
 
+        if (command.length() == 0)
+            throw new SmtpException(500);
+
+        commandData = commandData.trim();
         command = command.toUpperCase();
-
-        if (command.length() == 0) {
-            ctx.write("500 Error: bad syntax\r\n");
-            return;
-        }
 
         switch( command )
         {
-            case "Auth":
-                auth.process(ctx, smtpData);
+            case "AUTH":
+                auth.process(ctx, smtpData, commandData);
                 break;
             case "HELO":
-                helo.process(ctx);
+                helo.process(ctx, smtpData, commandData);
                 break;
             case "EHLO":
-                ehlo.process(ctx, smtpData);
+                ehlo.process(ctx, smtpData, commandData);
                 break;
             case "STARTTLS":
                 startTls.process(ctx, smtpData);
                 break;
             case "MAIL FROM":
                 if( commandData.equals("") )
-                    ctx.write("500 Error: bad syntax\r\n");
+                    throw new SmtpException(501);
                 mailFrom.process(ctx, smtpData, commandData);
                 break;
             case "NOOP":
@@ -83,7 +82,7 @@ public class ProtocolService implements IProtocol
                 break;
             case "RCPT TO":
                 if( commandData.equals("") )
-                    ctx.write("500 Error: bad syntax\r\n");
+                    throw new SmtpException(501);
                 rcptTo.process(ctx, smtpData, commandData);
                 break;
             case "DATA":
@@ -97,8 +96,7 @@ public class ProtocolService implements IProtocol
                 break;
             default:
                 log.error("unrecognized command : {}", command);
-                ctx.write("500 unrecognized command\r\n");
-                break;
+                throw new SmtpException(500);
         }
     }
 }

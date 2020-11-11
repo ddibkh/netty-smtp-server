@@ -1,24 +1,8 @@
 package com.mail.smtp.mta.initializer;
 
 import com.mail.smtp.mta.MailCounter;
-import com.mail.smtp.mta.SmtpData;
-import com.mail.smtp.mta.handler.SmtpListenerHandler;
-import com.mail.smtp.mta.handler.SmtpServerHandler;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

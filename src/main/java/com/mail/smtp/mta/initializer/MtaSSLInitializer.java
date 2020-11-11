@@ -1,6 +1,6 @@
 package com.mail.smtp.mta.initializer;
 
-import com.mail.smtp.mta.SmtpData;
+import com.mail.smtp.mta.data.SmtpData;
 import com.mail.smtp.mta.handler.SmtpListenerHandler;
 import com.mail.smtp.mta.handler.SmtpSSLServerHandler;
 import com.mail.smtp.mta.handler.SmtpStringEncoder;
@@ -10,12 +10,9 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.net.ssl.SSLEngine;
 
 @Slf4j
 @RequiredArgsConstructor

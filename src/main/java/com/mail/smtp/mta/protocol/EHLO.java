@@ -1,7 +1,7 @@
 package com.mail.smtp.mta.protocol;
 
 import com.mail.smtp.config.SmtpConfig;
-import com.mail.smtp.mta.SmtpData;
+import com.mail.smtp.mta.data.SmtpData;
 import com.mail.smtp.util.CommonUtil;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
@@ -11,12 +11,15 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class Ehlo
+public class EHLO
 {
     private final SmtpConfig smtpConfig;
 
-    public void process(ChannelHandlerContext ctx, SmtpData smtpData)
+    public void process(ChannelHandlerContext ctx, SmtpData smtpData, String commandData)
     {
+        log.info("ehlo : {}", commandData);
+        smtpData.setHelo(commandData);
+
         String ehlo = "250-" + CommonUtil.getHostName() +
                 " Pleased to meet you\r\n250-8BITMIME\r\n";
 

@@ -6,11 +6,12 @@
 
 package com.mail.smtp.mta.handler;
 
-import com.mail.smtp.mta.SmtpData;
+import com.mail.smtp.mta.data.SmtpData;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.timeout.ReadTimeoutException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -76,11 +77,23 @@ public class SmtpDataHandler extends ChannelInboundHandlerAdapter
 		log.trace("smtpdatahandler channelreadcomplete [" + toString() + "]");
 		ctx.flush();
 	}
-	
+
+	@Override
+	public void channelUnregistered(ChannelHandlerContext ctx)
+	{
+		log.trace("smtpdatahandler channelUnregistered [" + toString() + "]");
+		ChannelPipeline cp = ctx.pipeline();
+		cp.replace("datahandler", "basehandler", baseHandler);
+	}
+
 	@Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 	{
-		log.error("exception occured, {}", cause.getMessage());
+		if( cause instanceof ReadTimeoutException )
+			log.error("exception occured, read timed out");
+		else
+			log.error("exception occured, {}", cause.getMessage());
+
 		if( log.isTraceEnabled() )
     		cause.printStackTrace();
         ctx.close();

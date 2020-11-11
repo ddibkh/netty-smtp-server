@@ -1,4 +1,4 @@
-package com.mail.smtp.mta;
+package com.mail.smtp.mta.data;
 
 import com.mail.smtp.util.CommonUtil;
 import io.netty.handler.ssl.SslContext;
@@ -19,9 +19,9 @@ public class SmtpData
 	@Setter @Getter
 	private int clientPort;
 	@Setter @Getter
-	private String mailfrom;
+	private UserVO mailfrom;
 	@Setter @Getter
-	private List<String> listRcptTo = new ArrayList<>();
+	private List<UserVO> listRcptTo = new ArrayList<>();
 	@Setter @Getter
 	private StringBuffer msg = new StringBuffer();
 	@Setter @Getter
@@ -39,6 +39,12 @@ public class SmtpData
 	@Getter
 	private String randomUID;
 
+	@Setter @Getter
+	private String helo;
+
+	@Setter @Getter
+	private boolean blankSender;
+
 	public SmtpData(SslContext sslContext)
 	{
 		this.sslContext = sslContext;
@@ -47,17 +53,19 @@ public class SmtpData
 
 	public void init()
 	{
-		mailfrom = "";
+		mailfrom = null;
 		listRcptTo.clear();
 		msg.setLength(0);
 		subject = "";
 		completeData = false;
 		randomUID = CommonUtil.makeUID();
+		blankSender = false;
+		helo = "";
 	}
 
-	public void addReceipent(String strTo)
+	public void addReceipent(UserVO to)
 	{
-		listRcptTo.add(strTo);
+		listRcptTo.add(to);
 	}
 	
 	public String getReceipents()

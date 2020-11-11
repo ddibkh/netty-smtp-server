@@ -1,6 +1,6 @@
 package com.mail.smtp.mta.protocol;
 
-import com.mail.smtp.mta.SmtpData;
+import com.mail.smtp.mta.data.SmtpData;
 import io.netty.channel.ChannelHandlerContext;
 
 public interface IProtocol

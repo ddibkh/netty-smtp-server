@@ -42,3 +42,11 @@ CREATE TABLE IF NOT EXISTS tbl_maillist
 	INDEX IDX_MAILLIST_01 (f_midx)
 );
 
+CREATE TABLE IF NOT EXISTS tbl_relay
+(
+    f_idx INTEGER NOT NULL AUTH INCREMENT PRIMARY KEY,
+    f_didx INTEGER NOT NULL COMMENT 'f_idx of tbl_domain',
+    f_type INTEGER NOT NULL DEFAULT 0 COMMENT '0 : ip, 1 : subnet',
+    f_ip VARCHAR(255) NOT NULL,
+    UNIQUE INDEX UIDX_RELAY_01 (f_didx, f_ip)
+);

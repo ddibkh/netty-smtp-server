@@ -1,8 +1,6 @@
 package com.mail.smtp.mta.handler;
 
-import com.mail.smtp.mta.SmtpData;
-import io.netty.channel.ChannelHandler;
-import io.netty.handler.ssl.SslContext;
+import com.mail.smtp.mta.data.SmtpData;
 
 public class SmtpMsaServerHandler extends SmtpServerHandler
 {

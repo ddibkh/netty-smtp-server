@@ -6,7 +6,7 @@ public class SHA256
 {
 	public static String encode(String plainedData)
 	{
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
 		try
 		{
@@ -14,11 +14,10 @@ public class SHA256
 			sha.update(plainedData.getBytes());
 
 			byte[] shaBytes = sha.digest();
-			int length = shaBytes.length;
 
-			for( int i = 0; i < length; i++ )
+			for( byte shaByte : shaBytes )
 			{
-				sb.append(Integer.toString((shaBytes[i] & 0xff) + 0x100, 16).substring(1));
+				sb.append(Integer.toString(( shaByte & 0xff ) + 0x100, 16).substring(1));
 			}
 		}
 		catch( Exception e )

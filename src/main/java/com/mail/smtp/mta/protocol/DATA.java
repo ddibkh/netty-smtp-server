@@ -1,6 +1,6 @@
 package com.mail.smtp.mta.protocol;
 
-import com.mail.smtp.mta.SmtpData;
+import com.mail.smtp.mta.data.SmtpData;
 import com.mail.smtp.mta.handler.SmtpDataHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class Data
+public class DATA
 {
     public void process(ChannelHandlerContext ctx, SmtpData smtpData)
     {

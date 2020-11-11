@@ -28,7 +28,6 @@ spring:
         prepStmtCacheSize: 250
         prepStmtCacheSqlLimit: 2048
         useServerPrepStmts: true
-    #schema: DDL.sql
     data: DML.sql
     initialization-mode: always
 

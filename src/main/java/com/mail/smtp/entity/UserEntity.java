@@ -46,7 +46,7 @@ public class UserEntity
     private String userid;
 
     @OneToOne
-    @JoinColumn(name = "f_didx")
+    @JoinColumn(name = "f_didx", columnDefinition = "integer not null")
     private DomainEntity domain;
 
     @Column(name = "f_pwd", columnDefinition = "varchar(255) not null")

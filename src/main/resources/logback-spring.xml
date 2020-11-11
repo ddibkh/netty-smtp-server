@@ -57,7 +57,7 @@
     </appender>
 
     <!-- 로거 설정 -->
-    <logger name="com.mail.smtp" level="DEBUG" additivity="false">
+    <logger name="com.mail.smtp" level="TRACE" additivity="false">
         <appender-ref ref="API"/>
     </logger>
 

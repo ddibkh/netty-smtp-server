@@ -6,11 +6,13 @@ package com.mail.smtp.mta.handler;
  * Modifier: kkwang
  */
 
+import com.mail.smtp.exception.SmtpException;
 import com.mail.smtp.mta.ApplicationContextProvider;
-import com.mail.smtp.mta.SmtpData;
+import com.mail.smtp.mta.data.SmtpData;
 import com.mail.smtp.mta.protocol.ProtocolService;
 import com.mail.smtp.util.CommonUtil;
 import io.netty.channel.*;
+import io.netty.handler.timeout.ReadTimeoutException;
 import kr.co.deepsoft.util.JNIJavaMail;
 import kr.co.deepsoft.util.MimeAttachInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -182,10 +184,26 @@ public class SmtpServerHandler extends ChannelInboundHandlerAdapter
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
     {
-        log.error("exception occured, {}", cause.getMessage());
+        if( cause instanceof ReadTimeoutException )
+        {
+            log.error("exception occured, read timed out");
+            ctx.close();
+        }
+        else if( cause instanceof SmtpException )
+        {
+            log.error("exception occured, error code : {}, message : {}",
+                    ( (SmtpException) cause ).getErrorCode(), cause.getMessage());
+            ctx.writeAndFlush(( (SmtpException) cause ).getResponse());
+        }
+        else
+        {
+            log.error("exception occured, {}", cause.getMessage());
+            ctx.close();
+        }
+
     	if( log.isTraceEnabled() )
     	    cause.printStackTrace();
-        ctx.close();
+
         MDC.clear();
     }
 }

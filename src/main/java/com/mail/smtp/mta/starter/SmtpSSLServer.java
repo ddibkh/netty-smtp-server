@@ -1,8 +1,5 @@
 /*
  * Basic SMTP server in Java using Netty
- *
- * Author: Maarten Oelering
- * Modifier : kkwang
  */
 
 package com.mail.smtp.mta.starter;

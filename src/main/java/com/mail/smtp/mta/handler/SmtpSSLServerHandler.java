@@ -6,7 +6,7 @@ package com.mail.smtp.mta.handler;
  * Modifier: kkwang
  */
 
-import com.mail.smtp.mta.SmtpData;
+import com.mail.smtp.mta.data.SmtpData;
 import com.mail.smtp.util.CommonUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -55,13 +55,6 @@ public class SmtpSSLServerHandler extends SmtpServerHandler
                     }
                 }
         );
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-    {
-    	cause.printStackTrace();
-        ctx.close();
     }
 }
 

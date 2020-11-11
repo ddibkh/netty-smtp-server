@@ -2,4 +2,18 @@ simple smtp using spring boot and netty
 
 vm option : -Dfile.encoding="UTF-8"
 
-계정 추가시 기본 mailbox 정보를 추가해야함.
+** auth plain test value
+base64(authid\0test@test.com\01111)
+YXV0aGlkAHRlc3RAdGVzdC5jb20AMTExMQ==
+
+
+** 메일 발송 (송신자 인증)
+인증 사용
+- 인증된 사용자는 릴레이 체크 없이 발송.
+- 인증되지 않은 사용자는 relay 체크. (relay 허용 아이피가 아닌 경우 거부)
+
+송신자, 수신자
+remote -> remote : 허용하지 않음.
+remote -> local :  수신.
+local -> remote : 인증 및 relay 체크.
+local -> local : 인증 및 relay 체크.
