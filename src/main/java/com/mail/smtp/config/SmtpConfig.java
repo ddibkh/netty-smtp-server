@@ -27,10 +27,7 @@ public class SmtpConfig
     @PostConstruct
     void Init()
     {
-        log.info("smtp.port : {}", environment.getProperty("smtp.port", Integer.class, 25));
-        log.info("install path : {}", environment.getProperty("install_path", ""));
-        System.out.println("smtp.port: " + environment.getProperty("smtp.port", Integer.class, 25));
-        System.out.println("install_path : " + environment.getProperty("install_path", ""));
+
     }
 
     public Integer getInt(String key, Integer value)

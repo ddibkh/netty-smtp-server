@@ -46,8 +46,8 @@ public class SmtpMSAServer
 		try
 		{
 			int port = smtpConfig.getInt("smtp.msa.port", 587);
-			ChannelFuture cf = bootstrap.bind(CommonUtil.getLocalIP(), port).sync();
-			cf.channel().closeFuture().sync();
+			log.info("start smtp submission port ... {}", CommonUtil.getLocalIP());
+			bootstrap.bind(port).sync().channel().closeFuture().sync();
 		}
 		catch(Exception e)
 		{

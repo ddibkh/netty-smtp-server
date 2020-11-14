@@ -14,10 +14,10 @@ public class MailAttribute implements Serializable
     private String subject;
     private String envelopeSender;
     private String envelopeReceiver;
-    private String headerFrom;
-    private String headerTo;
-    private String headerCc;
-    private String headerBcc;
+    private List<String> headerFrom;
+    private List<String> headerTo;
+    private List<String> headerCc;
+    private List<String> headerBcc;
     private String messageId;
     private String mailSize;
     private String sendDate;

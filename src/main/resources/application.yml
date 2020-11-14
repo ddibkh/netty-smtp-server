@@ -21,7 +21,7 @@ spring:
     password: sa
     driver-class-name: org.h2.Driver
     hikari:
-      maximum-pool-size: 30
+      maximum-pool-size: 10
       pool-name: hikari-cp
       data-source-properties:
         cachePreStmts: true

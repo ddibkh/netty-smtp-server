@@ -46,10 +46,8 @@ public class SmtpServer
 		try
 		{
 			int port = smtpConfig.getInt("smtp.port", 25);
-			String localIP = CommonUtil.getLocalIP();
-			ChannelFuture cf = bootstrap.bind(localIP, port).sync();
-			log.info("start smtp {}", localIP);
-			cf.channel().closeFuture().sync();
+			log.info("start smtp ... {}", CommonUtil.getLocalIP());
+			bootstrap.bind(port).sync().channel().closeFuture().sync();
 		}
 		catch(Exception e)
 		{

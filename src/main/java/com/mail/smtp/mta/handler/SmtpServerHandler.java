@@ -26,7 +26,6 @@ import java.util.ArrayList;
 @ChannelHandler.Sharable
 public class SmtpServerHandler extends ChannelInboundHandlerAdapter
 {
-	protected static Integer ncnt=1;
     protected SmtpData smtpData;
 
 	public SmtpServerHandler(SmtpData sd)
@@ -78,11 +77,6 @@ public class SmtpServerHandler extends ChannelInboundHandlerAdapter
 
     	if( smtpData.isCompleteData() )
     	{
-            synchronized( ncnt )
-            {
-                System.out.println("received mail count : " + ncnt++);
-            }
-
     		//save mail and parse
             String strEmlName = smtpData.getRandomUID();
         	strEmlName += ".eml";
@@ -165,7 +159,7 @@ public class SmtpServerHandler extends ChannelInboundHandlerAdapter
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx)
     {
-        log.trace("channelReadComplete [" + toString() + "]");
+        //log.trace("channelReadComplete [" + toString() + "]");
         ctx.flush();
     }
 

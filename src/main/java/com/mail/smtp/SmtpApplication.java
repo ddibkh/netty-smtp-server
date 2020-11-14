@@ -51,7 +51,7 @@ public class SmtpApplication implements CommandLineRunner
 				}
 				catch( GeneralSecurityException | IOException e )
 				{
-					log.error("fail to start ssl server, {}", e.getMessage());
+					log.error("fail to start ssl port server, {}", e.getMessage());
 				}
 			}).start();
 		}
@@ -65,7 +65,7 @@ public class SmtpApplication implements CommandLineRunner
 				}
 				catch( GeneralSecurityException | IOException e )
 				{
-					log.error("fail to start ssl server, {}", e.getMessage());
+					log.error("fail to start submission port server, {}", e.getMessage());
 				}
 			}).start();
 		}

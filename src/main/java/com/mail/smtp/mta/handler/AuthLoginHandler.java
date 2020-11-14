@@ -23,8 +23,7 @@ public class AuthLoginHandler<T extends CheckAuth> extends AuthHandler
     }
 
     @Override
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception
-    {
+    public void handlerAdded(ChannelHandlerContext ctx) {
         log.trace("auth login channel added");
         //request Username
         ctx.writeAndFlush("334 VXNlcm5hbWU6\r\n");
@@ -39,7 +38,7 @@ public class AuthLoginHandler<T extends CheckAuth> extends AuthHandler
         {
             ByteBuf bb = Base64.decode(Unpooled.wrappedBuffer(line.getBytes()));
             byte[] bytes = new byte[bb.readableBytes()];
-            bb = bb.readBytes(bytes);
+            bb.readBytes(bytes);
             String userId = new String(bytes);
             super.setUserId(userId);
 
@@ -52,7 +51,7 @@ public class AuthLoginHandler<T extends CheckAuth> extends AuthHandler
         {
             ByteBuf bb = Base64.decode(Unpooled.wrappedBuffer(line.getBytes()));
             byte[] bytes = new byte[bb.readableBytes()];
-            bb = bb.readBytes(bytes);
+            bb.readBytes(bytes);
             String userPass = new String(bytes);
             log.trace("user pass : {}", userPass);
             super.setUserPass(userPass);

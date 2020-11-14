@@ -44,8 +44,8 @@ public class SmtpSSLServer
 		try
 		{
 			int port = smtpConfig.getInt("smtp.ssl.port", 465);
-			ChannelFuture cf = bootstrap.bind(CommonUtil.getLocalIP(), port).sync();
-			cf.channel().closeFuture().sync();
+			log.info("start smtp ssl ... {}", CommonUtil.getLocalIP());
+			bootstrap.bind(port).sync().channel().closeFuture().sync();
 		}
 		catch(Exception e)
 		{
