@@ -39,3 +39,5 @@ build/
 /log/
 
 /backup/
+/queue/
+/user/

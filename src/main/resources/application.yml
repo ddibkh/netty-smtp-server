@@ -9,7 +9,8 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
+      #ddl-auto: create
     properties:
       hibernate:
         format_sql: true
@@ -28,10 +29,34 @@ spring:
         prepStmtCacheSize: 250
         prepStmtCacheSqlLimit: 2048
         useServerPrepStmts: true
-    data: DML.sql
+    #data: DML.sql
     initialization-mode: always
 
 
   jackson:
     mapper:
       DEFAULT_VIEW_INCLUSION: true
+
+  artemis:
+    mode: embedded
+    embedded:
+      enabled: true
+      persistent: true
+      queues: mta.queue
+      data-directory: mta-queue-journal
+    #pool:
+    #  enabled: true
+    #  max-connections: 10
+
+
+  jms:
+    cache:
+      enabled: true
+      session-cache-size: 5
+    listener:
+      acknowledge-mode: auto
+    template:
+      delivery-mode: persistent
+
+#server:
+#  shutdown: graceful

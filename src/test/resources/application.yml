@@ -1,0 +1,36 @@
+logging:
+  level:
+    root: debug
+
+spring:
+  h2:
+    console:
+      enabled: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+    generate-ddl: true
+
+  datasource:
+    url: jdbc:h2:tcp://localhost/~/simplesmtp/db;DB_CLOSE_DELAY=-1
+    username: sa
+    password: sa
+    driver-class-name: org.h2.Driver
+    hikari:
+      maximum-pool-size: 10
+      pool-name: hikari-cp
+      data-source-properties:
+        cachePreStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
+    initialization-mode: always
+
+
+  jackson:
+    mapper:
+      DEFAULT_VIEW_INCLUSION: true

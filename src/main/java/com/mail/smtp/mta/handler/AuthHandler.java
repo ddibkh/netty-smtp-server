@@ -1,7 +1,7 @@
 package com.mail.smtp.mta.handler;
 
 import com.mail.smtp.exception.SmtpException;
-import com.mail.smtp.mta.data.SmtpData;
+import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.mta.authentication.CheckAuth;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;

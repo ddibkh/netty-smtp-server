@@ -1,7 +1,7 @@
 package com.mail.smtp.mta.protocol;
 
 import com.mail.smtp.config.SmtpConfig;
-import com.mail.smtp.mta.data.SmtpData;
+import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.util.CommonUtil;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;

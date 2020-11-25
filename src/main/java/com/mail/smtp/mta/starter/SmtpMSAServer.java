@@ -19,8 +19,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -29,6 +31,7 @@ public class SmtpMSAServer
 {
 	private final SmtpSSLContext smtpSSLContext;
 	private final SmtpConfig smtpConfig;
+	private ChannelFuture closeFuture;
 
 	public void start() throws GeneralSecurityException, IOException
 	{
@@ -47,18 +50,29 @@ public class SmtpMSAServer
 		{
 			int port = smtpConfig.getInt("smtp.msa.port", 587);
 			log.info("start smtp submission port ... {}", CommonUtil.getLocalIP());
-			bootstrap.bind(port).sync().channel().closeFuture().sync();
+			closeFuture = bootstrap.bind(port).sync().channel().closeFuture();
+			closeFuture.sync();
 		}
 		catch(Exception e)
 		{
-			e.printStackTrace();
+			log.error("smtp submission server exception, {}", e.getMessage());
+			if( log.isTraceEnabled() )
+				e.printStackTrace();
 		}
 		finally
 		{
+			log.trace("call smtp submission server finally shutdown gracefully");
 			boss.shutdownGracefully();
 			work.shutdownGracefully();
 		}
 
 		log.info("end of smtp msa server");
+	}
+
+	@PreDestroy
+	public void preDestroy()
+	{
+		log.trace("smtp submission server destroy");
+		Optional.ofNullable(closeFuture).ifPresent(channelFuture -> channelFuture.channel().close());
 	}
 }

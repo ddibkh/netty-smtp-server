@@ -1,4 +1,6 @@
-simple smtp using spring boot and netty
+## simple smtp using spring boot and netty
+
+using Optional ifPresentOrElse in Java 9
 
 vm option : -Dfile.encoding="UTF-8"
 
@@ -12,8 +14,50 @@ YXV0aGlkAHRlc3RAdGVzdC5jb20AMTExMQ==
    - jdbc:h2:~/simplesmtp/db
    그 다음 접속시 부터
    - jdbc:h2:tcp://localhost/~/simplesmtp/db
+   접속 후
+   resources/init.sql 을 적용한다.
+   * 초기데이터
+   아이디 : test (계정 index : 1)
+   도메인 : test.com (도메인 index : 1)
+   sha256 비밀번호 : 0ffe1abd1a08215353c233d6e009613e95eec4253832a761af28ff37ac5a150c
+   편지함 : inbox, sent, spam
 
 
+** 메일 배달을 위해서 embeded 메시지 큐를 사용한다. (activemq artemis)
+참고링크 : https://docs.spring.io/spring-boot/docs/2.1.11.RELEASE/reference/html/boot-features-messaging.html
+1. 설정 (application.yml)
+spring:
+    artemis:
+        mode: embedded
+        embedded:
+          enabled: true
+          persistent: true
+          queues: mta.queue
+          #persistent true 인 경우 journal 파일 저장 디렉토리 지정.
+          data-directory: mta-queue-journal
+
+    jms:
+        cache:
+            enabled: true
+            session-cache-size: 5
+        listener:
+            # message 를 consume 한 순간 큐에서 삭제. (처리가 실패한 수신자에 대해서는 다시 queuing)
+            acknowledge-mode: auto
+        template:
+            delivery-mode: persistent
+
+2. dependency
+        <!-- activemq artemis dependency -->
+        <dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-artemis</artifactId>
+		</dependency>
+		<!-- for embeded activemq artemis -->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>artemis-jms-server</artifactId>
+		</dependency>
+=========== 메일 정책 ===========
 ** 메일 발송 (송신자 인증)
 인증 사용
 - 인증된 사용자는 릴레이 체크 없이 발송.

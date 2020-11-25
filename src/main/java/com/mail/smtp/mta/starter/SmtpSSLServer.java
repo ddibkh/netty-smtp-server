@@ -18,8 +18,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -28,6 +30,7 @@ public class SmtpSSLServer
 {
 	private final SmtpSSLContext smtpSSLContext;
 	private final SmtpConfig smtpConfig;
+	private ChannelFuture closeFuture;
 
 	public void start() throws GeneralSecurityException, IOException
 	{
@@ -45,18 +48,29 @@ public class SmtpSSLServer
 		{
 			int port = smtpConfig.getInt("smtp.ssl.port", 465);
 			log.info("start smtp ssl ... {}", CommonUtil.getLocalIP());
-			bootstrap.bind(port).sync().channel().closeFuture().sync();
+			closeFuture = bootstrap.bind(port).sync().channel().closeFuture();
+			closeFuture.sync();
 		}
 		catch(Exception e)
 		{
-			e.printStackTrace();
+			log.error("smtp ssl server, exception occured, {}", e.getMessage());
+			if( log.isTraceEnabled() )
+				e.printStackTrace();
 		}
 		finally
 		{
+			log.trace("call smtp ssl server finally shutdown gracefully");
 			boss.shutdownGracefully();
 			work.shutdownGracefully();
 		}
 
 		log.info("end of ssl smtp server");
+	}
+
+	@PreDestroy
+	public void preDestroy()
+	{
+		log.trace("smtp ssl server destroy");
+		Optional.ofNullable(closeFuture).ifPresent(channelFuture -> channelFuture.channel().close());
 	}
 }

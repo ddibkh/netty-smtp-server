@@ -1,6 +1,6 @@
 package com.mail.smtp.mta.handler;
 
-import com.mail.smtp.mta.data.SmtpData;
+import com.mail.smtp.data.SmtpData;
 
 public class SmtpMsaServerHandler extends SmtpServerHandler
 {

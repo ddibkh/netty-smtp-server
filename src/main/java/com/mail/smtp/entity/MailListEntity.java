@@ -1,5 +1,7 @@
 package com.mail.smtp.entity;
 
+import com.mail.smtp.converter.MailAttributeConverter;
+import com.mail.smtp.data.MailAttribute;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,6 +25,7 @@ CREATE TABLE IF NOT EXISTS tbl_maillist
 @Builder
 @Table(name = "tbl_maillist")
 @Entity
+//@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class MailListEntity
 {
     @Id
@@ -34,6 +37,19 @@ public class MailListEntity
     @JoinColumn(name = "f_midx", columnDefinition = "integer not null")
     private MailBoxEntity mbox;
 
+    @Column(name = "f_uid", columnDefinition = "varchar(64) not null")
+    private String uid;
+
+    @Column(name = "f_emlpath", columnDefinition = "varchar(255) not null")
+    private String emlPath;
+
+    @Column(name = "f_envfrom", columnDefinition = "varchar(255)")
+    private String envFrom;
+
+    @Column(name = "f_envto", columnDefinition = "varchar(4096)")
+    private String envTo;
+
     @Convert(converter = MailAttributeConverter.class)
+    @Column(name = "mail_attribute", columnDefinition = "CLOB not null")
     private MailAttribute mailAttribute;
 }

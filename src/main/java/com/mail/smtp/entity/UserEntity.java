@@ -51,8 +51,4 @@ public class UserEntity
 
     @Column(name = "f_pwd", columnDefinition = "varchar(255) not null")
     private String userPwd;
-
-    @OneToOne
-    @JoinColumn(name = "f_pidx", columnDefinition = "integer not null")
-    private PathEntity path;
 }

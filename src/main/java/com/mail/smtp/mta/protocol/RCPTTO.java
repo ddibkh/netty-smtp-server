@@ -2,8 +2,8 @@ package com.mail.smtp.mta.protocol;
 
 import com.mail.smtp.exception.RelayException;
 import com.mail.smtp.exception.SmtpException;
-import com.mail.smtp.mta.data.SmtpData;
-import com.mail.smtp.mta.data.UserVO;
+import com.mail.smtp.data.SmtpData;
+import com.mail.smtp.data.UserVO;
 import com.mail.smtp.service.RelayService;
 import com.mail.smtp.service.UserService;
 import com.mail.smtp.util.CommonUtil;

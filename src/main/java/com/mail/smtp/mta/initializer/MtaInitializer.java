@@ -2,7 +2,7 @@ package com.mail.smtp.mta.initializer;
 
 import com.mail.smtp.config.SmtpConfig;
 import com.mail.smtp.mta.ApplicationContextProvider;
-import com.mail.smtp.mta.data.SmtpData;
+import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.mta.handler.SmtpListenerHandler;
 import com.mail.smtp.mta.handler.SmtpServerHandler;
 import com.mail.smtp.mta.handler.SmtpStringEncoder;
@@ -39,7 +39,5 @@ public class MtaInitializer extends ChannelInitializer< SocketChannel >
 
         //for STARTTLS
         p.addLast("basehandler", new SmtpServerHandler(new SmtpData(sslContext)));
-        p.addLast("listenerhandler", new SmtpListenerHandler());
-        p.addLast("writehandler", new SmtpStringEncoder());
     }
 }

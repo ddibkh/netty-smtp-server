@@ -16,11 +16,15 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.ssl.SslContext;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Optional;
+import java.util.concurrent.CancellationException;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -29,6 +33,8 @@ public class SmtpServer
 {
 	private final SmtpSSLContext smtpSSLContext;
 	private final SmtpConfig smtpConfig;
+
+	private ChannelFuture closeFuture;
 
 	public void start() throws GeneralSecurityException, IOException
 	{
@@ -47,18 +53,49 @@ public class SmtpServer
 		{
 			int port = smtpConfig.getInt("smtp.port", 25);
 			log.info("start smtp ... {}", CommonUtil.getLocalIP());
-			bootstrap.bind(port).sync().channel().closeFuture().sync();
+			closeFuture = bootstrap.bind(port).sync().channel().closeFuture();
+			closeFuture.sync();
 		}
-		catch(Exception e)
+		catch(InterruptedException e)
 		{
-			e.printStackTrace();
+			log.info("smtp server interrupted, {}", e.getMessage());
+			if( log.isTraceEnabled() )
+				e.printStackTrace();
+		}
+		catch( CancellationException ce )
+		{
+			log.info("smtp server cancelation exception, {}", ce.getMessage());
+			if( log.isTraceEnabled() )
+				ce.printStackTrace();
 		}
 		finally
 		{
+			log.trace("call smtp server finally shutdown gracefully");
 			boss.shutdownGracefully();
 			work.shutdownGracefully();
 		}
 
 		log.info("end of smtp server");
+	}
+
+	@PreDestroy
+	public void preDestroy()
+	{
+		log.trace("smtp server destroy");
+		Optional.ofNullable(closeFuture).ifPresent(
+				channelFuture ->
+				{
+					try
+					{
+						channelFuture.channel().close().sync();
+					}
+					catch( InterruptedException e )
+					{
+						log.error("smtp server end process, close interrupt exception");
+						if( log.isTraceEnabled() )
+							e.printStackTrace();
+					}
+				}
+		);
 	}
 }

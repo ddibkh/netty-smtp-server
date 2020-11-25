@@ -3,7 +3,7 @@ package com.mail.smtp.service;
 import com.mail.smtp.entity.DomainEntity;
 import com.mail.smtp.entity.UserEntity;
 import com.mail.smtp.exception.SmtpException;
-import com.mail.smtp.mta.data.UserVO;
+import com.mail.smtp.data.UserVO;
 import com.mail.smtp.repository.DomainRepository;
 import com.mail.smtp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -65,14 +65,12 @@ public class UserService
             userVO.setLocal(true);
             userVO.setUserIndex(userIndex);
             userVO.setDomainIndex(domainIndex);
-            log.info("local user, {}", address);
         }
         else
         {
             userVO.setLocal(false);
             userVO.setUserIndex(-1);
             userVO.setDomainIndex(-1);
-            log.info("remote user, {}", address);
         }
 
         return userVO;

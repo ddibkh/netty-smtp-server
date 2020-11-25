@@ -6,7 +6,7 @@ package com.mail.smtp.mta.handler;
  * Modifier: kkwang
  */
 
-import com.mail.smtp.mta.data.SmtpData;
+import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.util.CommonUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;

@@ -56,7 +56,25 @@
         </rollingPolicy>
     </appender>
 
+    <appender name="DELIVERY" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${logging.delivery.filename}</file>
+
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${logging.delivery.file.logpattern}</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${logging.delivery.filename}.%d{yyyy-MM-dd}.%i.log}</fileNamePattern>
+            <maxFileSize>${logging.delivery.file.max-size:-10MB}</maxFileSize>
+            <maxHistory>${logging.delivery.file.max-history:-7}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
     <!-- 로거 설정 -->
+    <logger name="delivery" level="DEBUG" additivity="false">
+        <appender-ref ref="DELIVERY"/>
+    </logger>
+
     <logger name="com.mail.smtp" level="TRACE" additivity="false">
         <appender-ref ref="API"/>
     </logger>
@@ -78,10 +96,10 @@
         <appender-ref ref="QUERY"/>
     </logger>
 
-    <logger name="org.springframework.core" level="INFO"/>
-    <logger name="org.springframework.beans" level="INFO"/>
-    <logger name="org.springframework.context" level="INFO"/>
-    <logger name="org.springframework.web" level="INFO"/>
+    <!-- logger name="org.springframework.core" level="INFO"/ -->
+    <!-- logger name="org.springframework.beans" level="INFO"/ -->
+    <!-- logger name="org.springframework.context" level="INFO"/ -->
+    <!-- logger name="org.springframework.web" level="INFO"/ -->
 
     <!-- root 레벨 설정 -->
     <root level="DEBUG">

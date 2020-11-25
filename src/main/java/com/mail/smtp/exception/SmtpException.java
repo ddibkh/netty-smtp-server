@@ -37,6 +37,9 @@ public class SmtpException extends RuntimeException
             case 454:
                 message = "temporary authentication failure";
                 break;
+            case 458:
+                message = "temporary queuing error";
+                break;
             case 455:
                 message = "server unable to accommodate parameters";
                 break;

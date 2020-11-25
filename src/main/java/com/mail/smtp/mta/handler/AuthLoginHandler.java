@@ -2,7 +2,7 @@ package com.mail.smtp.mta.handler;
 
 import com.mail.smtp.exception.SmtpException;
 import com.mail.smtp.mta.Define;
-import com.mail.smtp.mta.data.SmtpData;
+import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.mta.authentication.CheckAuth;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

@@ -1,6 +1,6 @@
 package com.mail.smtp.mta.protocol;
 
-import com.mail.smtp.mta.data.SmtpData;
+import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.mta.authentication.Sha256PwdAuth;
 import com.mail.smtp.mta.handler.AuthLoginHandler;
 import com.mail.smtp.mta.handler.AuthPlainHandler;

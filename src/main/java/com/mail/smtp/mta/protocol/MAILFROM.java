@@ -1,23 +1,15 @@
 package com.mail.smtp.mta.protocol;
 
 import com.mail.smtp.config.SmtpConfig;
-import com.mail.smtp.entity.DomainEntity;
-import com.mail.smtp.entity.UserEntity;
 import com.mail.smtp.exception.SmtpException;
-import com.mail.smtp.mta.data.SmtpData;
-import com.mail.smtp.mta.data.UserVO;
+import com.mail.smtp.data.SmtpData;
+import com.mail.smtp.data.UserVO;
 import com.mail.smtp.mta.handler.SmtpMsaServerHandler;
-import com.mail.smtp.repository.DomainRepository;
-import com.mail.smtp.repository.UserRepository;
 import com.mail.smtp.service.UserService;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import java.util.Optional;
 
 @Component
 @Slf4j

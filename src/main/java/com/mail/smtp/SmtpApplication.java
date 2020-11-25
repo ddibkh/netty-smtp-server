@@ -9,14 +9,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 
+import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 @Slf4j
 @SpringBootApplication
 @RequiredArgsConstructor
-public class SmtpApplication implements CommandLineRunner
+public class SmtpApplication implements CommandLineRunner, ApplicationListener< ContextClosedEvent >
 {
 	private final SmtpConfig smtpConfig;
 	private final SmtpSSLServer smtpSSLServer;
@@ -69,5 +72,11 @@ public class SmtpApplication implements CommandLineRunner
 				}
 			}).start();
 		}
+	}
+
+	@Override
+	public void onApplicationEvent(ContextClosedEvent contextClosedEvent)
+	{
+		log.trace("onApplication closed event");
 	}
 }
