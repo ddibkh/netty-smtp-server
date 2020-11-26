@@ -36,6 +36,7 @@ build/
 ### ETC ###
 *.eml
 *.log
+*.jks
 /log/
 
 /backup/
