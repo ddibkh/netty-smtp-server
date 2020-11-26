@@ -41,3 +41,4 @@ build/
 /backup/
 /queue/
 /user/
+/mta-queue-journal/

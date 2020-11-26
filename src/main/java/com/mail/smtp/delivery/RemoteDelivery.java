@@ -4,8 +4,10 @@ import com.mail.smtp.data.MailAttribute;
 import com.mail.smtp.data.UserVO;
 import com.mail.smtp.dns.DnsResolver;
 import com.mail.smtp.dns.result.DnsResult;
+import com.mail.smtp.dns.result.MXResult;
 import com.mail.smtp.entity.MailBoxEntity;
 import com.mail.smtp.exception.DeliveryException;
+import com.mail.smtp.exception.DnsException;
 import com.mail.smtp.exception.SmtpException;
 import lombok.Data;
 import org.slf4j.Logger;
@@ -68,27 +70,28 @@ public class RemoteDelivery implements Delivery
 
     private DeliveryResult remoteDeliveryByDomain(String domainName, List<String> toList, String emlPath, MailAttribute mailAttribute)
     {
-        CompletableFuture< List<DnsResult> > future = CompletableFuture.supplyAsync(() -> dnsResolverMX.resolveDomainByTcp(domainName));
-        CompletableFuture<DeliveryResult> deliveryFuture = future.exceptionally(throwable -> {
-            DeliveryResult deliveryResult = new DeliveryResult();
-            String receivers = toList.stream().collect(Collectors.joining(","));
-            deliveryResult.setEnvToAddress(receivers);
+        DeliveryResult deliveryResult = new DeliveryResult();
+        String receivers = toList.stream().collect(Collectors.joining(","));
+        deliveryResult.setEnvToAddress(receivers);
+
+        List< MXResult > dnsList = dnsResolverMX.resolveDomainByTcp(domainName);
+        try
+        {
+            dnsList = dnsResolverMX.resolveDomainByTcp(domainName);
+            for( MXResult record : dnsList )
+            {
+                /*
+                메일 발송
+                 */
+            }
+        }
+        catch( DnsException de )
+        {
+            log.error("fail to MX record resolved, {}", de.getMessage());
             deliveryResult.setResult(DeliveryResult.DResult.FAILURE);
             deliveryResult.setMessage(String.format("failed to resolve mx recoed, {}", domainName));
-            return Collections.emptyList();
-        }).thenApply(dns -> {
-           dns.stream().forEach(result -> log.info("{}", result.toString()));
-           /*
-           여기에 delivery 코드 삽입.
-            */
-            DeliveryResult deliveryResult = new DeliveryResult();
-            String receivers = toList.stream().collect(Collectors.joining(","));
-            deliveryResult.setEnvToAddress(receivers);
-            deliveryResult.setResult(DeliveryResult.DResult.SUCCESS);
-            deliveryResult.setMessage(String.format("success resolve mx recoed, {}", domainName));
-            return deliveryResult;
-        });
+        }
 
-        return deliveryFuture.join();
+        return deliveryResult;
     }
 }
