@@ -17,7 +17,6 @@ public class EHLO
 
     public void process(ChannelHandlerContext ctx, SmtpData smtpData, String commandData)
     {
-        log.info("ehlo : {}", commandData);
         smtpData.setHelo(commandData);
 
         String ehlo = "250-" + CommonUtil.getHostName() +

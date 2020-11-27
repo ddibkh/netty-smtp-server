@@ -2,7 +2,6 @@ package com.mail.smtp.mta.authentication;
 
 import com.mail.smtp.entity.UserEntity;
 import com.mail.smtp.exception.AuthException;
-import com.mail.smtp.util.codec.SHA256;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

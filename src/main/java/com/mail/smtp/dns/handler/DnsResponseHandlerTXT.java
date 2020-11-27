@@ -8,9 +8,6 @@ import io.netty.handler.codec.dns.*;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutException;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,14 +19,16 @@ reference : https://github.com/netty/netty/tree/4.1/example/src/main/java/io/net
  */
 public class DnsResponseHandlerTXT<T extends DnsResponse> extends DnsResponseHandler<T>
 {
-    private final Logger log = LoggerFactory.getLogger("delivery");
-
     @Getter
     String domainName;
-    private List< DnsResult > listResult = new ArrayList<>();
+
+    public DnsResponseHandlerTXT(Class<T> classI)
+    {
+        super(classI, DnsRecordType.TXT);
+    }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
     {
         String message;
         if( cause instanceof ReadTimeoutException )
@@ -39,13 +38,9 @@ public class DnsResponseHandlerTXT<T extends DnsResponse> extends DnsResponseHan
         else
             message = String.format("TXT handler exception caught, %s", cause.getMessage());
 
-        log.error("{}", message);
         ctx.close();
-    }
 
-    public DnsResponseHandlerTXT(Class<T> classI)
-    {
-        super(classI, DnsRecordType.TXT);
+        throw new DnsException(message);
     }
 
     @Override
@@ -56,24 +51,23 @@ public class DnsResponseHandlerTXT<T extends DnsResponse> extends DnsResponseHan
         {
             if (dnsResponse.count(DnsSection.QUESTION) > 0) {
                 DnsQuestion question = dnsResponse.recordAt(DnsSection.QUESTION, 0);
-                log.info("check TXT record : {}", question.name());
                 domainName = question.name();
             }
             else
                 domainName = "";
 
             int count = dnsResponse.count(DnsSection.ANSWER);
-            log.debug("TXT record answer count : {}", count);
 
             //error
             if( count == 0 )
             {
-                log.error("fail to TXT record domain '{}', {}", domainName, dnsResponse.code().toString());
                 throw new DnsException(dnsResponse.code().toString());
             }
             else
             {
-                for (int i = 0;  i < count; i++) {
+                List<DnsResult> results = new ArrayList<>();
+                for (int i = 0;  i < count; i++)
+                {
                     DnsRecord record = dnsResponse.recordAt(DnsSection.ANSWER, i);
                     if (record.type() == DnsRecordType.TXT)
                     {
@@ -91,20 +85,16 @@ public class DnsResponseHandlerTXT<T extends DnsResponse> extends DnsResponseHan
                         }
                         //read 2byte
                         DnsResult txtResult = new DnsResult(DnsResult.Type.TXT, sb.toString());
-                        listResult.add(txtResult);
+                        results.add(txtResult);
                     }
                 }
+
+                channelHandlerContext.channel().attr(TXT_RECORD_RESULT).set(results);
             }
         }
         finally
         {
             channelHandlerContext.close();
         }
-    }
-
-    @Override
-    public List<DnsResult> getResult()
-    {
-        return listResult;
     }
 }

@@ -14,9 +14,6 @@ import java.util.List;
 
 public interface DnsResolver
 {
-    /*<T extends DnsResult> ListenableFuture<List< T >> resolveDomainByTcp(String domainName) throws DnsException;
-    <T extends DnsResult> ListenableFuture<List< T >> resolveDomainByUdp(String domainName) throws DnsException;*/
-
     <T extends DnsResult> List< T > resolveDomainByTcp(String domainName) throws DnsException;
     <T extends DnsResult> List< T > resolveDomainByUdp(String domainName) throws DnsException;
 }

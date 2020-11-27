@@ -4,6 +4,7 @@ import com.mail.smtp.config.SmtpConfig;
 import com.mail.smtp.dns.handler.DnsResponseHandlerA;
 import com.mail.smtp.dns.handler.DnsResponseHandlerMX;
 import com.mail.smtp.dns.handler.DnsResponseHandlerTXT;
+import com.mail.smtp.dns.result.DnsResult;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -17,24 +18,18 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.dns.*;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
-import org.slf4j.MDC;
-import org.slf4j.spi.MDCAdapter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.core.task.TaskDecorator;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.Executor;
+import java.util.ArrayList;
 
 @Configuration
+@RequiredArgsConstructor
 public class DnsConfiguration
 {
-    @Autowired
-    private SmtpConfig smtpConfig;
+    private final SmtpConfig smtpConfig;
 
     @Bean
     @Lazy
@@ -42,7 +37,6 @@ public class DnsConfiguration
     {
         int dnsTimeout = smtpConfig.getInt("smtp.dns.timeout", 10);
         Bootstrap b = new Bootstrap();
-        //b.group(tcpMxEventLoopGroup());
         b.group(eventLoopGroup());
         b.channel(NioSocketChannel.class);
         b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, dnsTimeout * 1000);
@@ -70,7 +64,6 @@ public class DnsConfiguration
     {
         //UDP 의 경우 timeout 처리는 resolver 내에서 처리한다.
         Bootstrap b = new Bootstrap();
-        //b.group(udpMxEventLoopGroup());
         b.group(eventLoopGroup());
         b.channel(NioDatagramChannel.class);
         b.handler(new ChannelInitializer< DatagramChannel >()
@@ -94,7 +87,6 @@ public class DnsConfiguration
     {
         int dnsTimeout = smtpConfig.getInt("smtp.dns.timeout", 10);
         Bootstrap b = new Bootstrap();
-        //b.group(tcpTxtEventLoopGroup());
         b.group(eventLoopGroup());
         b.channel(NioSocketChannel.class);
         b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, dnsTimeout * 1000);
@@ -121,7 +113,6 @@ public class DnsConfiguration
     {
         //UDP 의 경우 timeout 처리는 resolver 내에서 처리한다.
         Bootstrap b = new Bootstrap();
-        //b.group(udpTxtEventLoopGroup());
         b.group(eventLoopGroup());
         b.channel(NioDatagramChannel.class);
         b.handler(new ChannelInitializer< DatagramChannel >()
@@ -145,7 +136,6 @@ public class DnsConfiguration
     {
         int dnsTimeout = smtpConfig.getInt("smtp.dns.timeout", 10);
         Bootstrap b = new Bootstrap();
-        //b.group(tcpAEventLoopGroup());
         b.group(eventLoopGroup());
         b.channel(NioSocketChannel.class);
         b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, dnsTimeout * 1000);
@@ -172,7 +162,6 @@ public class DnsConfiguration
     {
         //UDP 의 경우 timeout 처리는 resolver 내에서 처리한다.
         Bootstrap b = new Bootstrap();
-        //b.group(udpAEventLoopGroup());
         b.group(eventLoopGroup());
         b.channel(NioDatagramChannel.class);
         b.handler(new ChannelInitializer< DatagramChannel >()
@@ -195,34 +184,5 @@ public class DnsConfiguration
     public EventLoopGroup eventLoopGroup()
     {
         return new NioEventLoopGroup();
-    }
-
-    @Bean
-    public Executor threadPoolTaskExecutor()
-    {
-        ThreadPoolTaskExecutor tp = new ThreadPoolTaskExecutor();
-        tp.setCorePoolSize(10);
-        tp.setQueueCapacity(50);
-        tp.setMaxPoolSize(100);
-        tp.setThreadNamePrefix("dnsResolve");
-        tp.setTaskDecorator(new TaskDecorator()
-        {
-            @Override
-            public Runnable decorate(Runnable runnable)
-            {
-                Map<String, String> mdcMap = MDC.getCopyOfContextMap();
-                if( mdcMap != null )
-                {
-                    return () -> {
-                        MDC.setContextMap(mdcMap);
-                        runnable.run();
-                    };
-                }
-                else
-                    return () -> runnable.run();
-            }
-        });
-        tp.initialize();
-        return tp;
     }
 }

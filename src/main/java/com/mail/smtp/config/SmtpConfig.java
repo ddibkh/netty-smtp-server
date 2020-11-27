@@ -1,18 +1,12 @@
 package com.mail.smtp.config;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.sql.SQLOutput;
 
 @Component
 @RequiredArgsConstructor
@@ -42,6 +36,8 @@ public class SmtpConfig
 
     public String getString(String key, String value)
     {
-        return environment.getProperty(key, value);
+        //설정항목이 없는 경우 value 가 리턴된다.
+        String value2 = environment.getProperty(key, value);
+        return value2.equals("") ? value : value2;
     }
 }

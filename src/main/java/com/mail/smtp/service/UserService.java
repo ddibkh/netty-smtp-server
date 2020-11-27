@@ -28,12 +28,6 @@ public class UserService
         try
         {
             internetAddress= new InternetAddress(rawAddress);
-            /*System.out.println("============ mail from ============");
-            System.out.println(internetAddress.toString());
-            System.out.println(internetAddress.getAddress());
-            System.out.println(internetAddress.getPersonal());
-            System.out.println(internetAddress.getType());
-            System.out.println("============ mail from ============");*/
         }
         catch( AddressException ae )
         {

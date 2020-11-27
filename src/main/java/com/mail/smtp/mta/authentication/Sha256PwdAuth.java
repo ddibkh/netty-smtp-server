@@ -19,6 +19,7 @@ public class Sha256PwdAuth implements CheckAuth
             return false;
         }
 
+
         String encodedPass = SHA256.encode(pwd);
         return user.getUserPwd().equals(encodedPass);
     }

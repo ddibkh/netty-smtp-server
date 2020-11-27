@@ -26,6 +26,9 @@ import org.slf4j.MDC;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -52,6 +55,16 @@ public class SmtpDataHandler extends ChannelInboundHandlerAdapter
     	log.trace("mail from : " + smtpData.getMailfrom());
     	log.trace("rcpt to: " + smtpData.getReceipents());
     	//================================= DEBUG =================================
+		SimpleDateFormat formatter = new SimpleDateFormat(
+                "E, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
+
+		//set Received header
+        String received = "Received: from " +
+                smtpData.getClientIP() +
+                " with SMTP id " +
+                smtpData.getRandomUID() +
+                ";\r\n\t" + formatter.format(new Date()) + "\r\n";
+        smtpData.addMessage(received);
     }
     
     @Override
@@ -114,6 +127,7 @@ public class SmtpDataHandler extends ChannelInboundHandlerAdapter
 			MailAttribute mailAttribute;
 			try{
 				mailAttribute = mimeParseService.getMailAttributeFromEml(tempEmlPath);
+				mailAttribute.setConnIP(smtpData.getClientIP());
 				mailAttribute.setMailUid(smtpData.getRandomUID());
 				mailAttribute.setEnvFrom(smtpData.getMailfrom().getAddress());
 			}catch( Exception e ) {

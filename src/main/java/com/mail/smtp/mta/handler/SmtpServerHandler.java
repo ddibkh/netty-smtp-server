@@ -6,15 +6,14 @@ package com.mail.smtp.mta.handler;
  * Modifier: kkwang
  */
 
+import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.exception.SmtpException;
 import com.mail.smtp.mta.ApplicationContextProvider;
-import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.mta.protocol.ProtocolService;
 import com.mail.smtp.util.CommonUtil;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutException;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +23,6 @@ import java.net.InetSocketAddress;
 
 @Slf4j
 @ChannelHandler.Sharable
-//public class SmtpServerHandler extends ChannelInboundHandlerAdapter
 public class SmtpServerHandler extends ChannelDuplexHandler
 {
     protected SmtpData smtpData;
@@ -42,12 +40,6 @@ public class SmtpServerHandler extends ChannelDuplexHandler
     @Override
     public void channelActive(ChannelHandlerContext ctx)
     {
-        // Send greeting for a new connection.
-        //ByteBuf bb = Unpooled.copiedBuffer("220 " + hostname + " ESMTP\r\n", Charset.defaultCharset());
-        //ctx.writeAndFlush(bb);
-        /*
-         * ByteBuf 안쓸려면 encoder 를 StringEncoder 로 셋팅해줘야 함.
-         */
         InetSocketAddress sa = ((InetSocketAddress) ctx.channel().remoteAddress());
         String clientip = sa.getAddress().getHostAddress();
 

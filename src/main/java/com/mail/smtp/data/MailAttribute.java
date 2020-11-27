@@ -10,6 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 public class MailAttribute implements Serializable
 {
+    private String connIP;
     private String subject;
     private String envFrom;
     private String headerFrom;

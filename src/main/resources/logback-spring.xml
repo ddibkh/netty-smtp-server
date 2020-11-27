@@ -22,23 +22,17 @@
     </appender>
 
     <!-- 에러의 경우 파일 로그 처리 -->
-    <appender name="WEB" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <!-- filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>error</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter -->
-
-        <file>${LOG_DIR}/${logging.web.filename}</file>
+    <appender name="APPLICATION" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${logging.application.filename}</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>${logging.web.file.logpattern}</pattern>
+            <pattern>${logging.application.file.logpattern}</pattern>
         </encoder>
 
         <!-- rolling 정책 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_DIR}/${logging.web.filename}.%d{yyyy-MM-dd}.%i.log}</fileNamePattern>
-            <maxFileSize>${logging.web.file.max-size:-10MB}</maxFileSize>
-            <maxHistory>${logging.web.file.max-history:-7}</maxHistory>
+            <fileNamePattern>${LOG_DIR}/${logging.application.filename}.%d{yyyy-MM-dd}.%i.log}</fileNamePattern>
+            <maxFileSize>${logging.application.file.max-size:-10MB}</maxFileSize>
+            <maxHistory>${logging.application.file.max-history:-7}</maxHistory>
         </rollingPolicy>
     </appender>
 
@@ -96,14 +90,9 @@
         <appender-ref ref="QUERY"/>
     </logger>
 
-    <!-- logger name="org.springframework.core" level="INFO"/ -->
-    <!-- logger name="org.springframework.beans" level="INFO"/ -->
-    <!-- logger name="org.springframework.context" level="INFO"/ -->
-    <!-- logger name="org.springframework.web" level="INFO"/ -->
-
     <!-- root 레벨 설정 -->
     <root level="DEBUG">
-        <appender-ref ref="WEB"/>
+        <appender-ref ref="APPLICATION"/>
     </root>
 </configuration>
 

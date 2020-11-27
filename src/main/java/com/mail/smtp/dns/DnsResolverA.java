@@ -7,35 +7,27 @@ reference : https://github.com/netty/netty/tree/4.1/example/src/main/java/io/net
 package com.mail.smtp.dns;
 
 import com.mail.smtp.config.SmtpConfig;
-import com.mail.smtp.dns.handler.DnsResponseHandlerA;
 import com.mail.smtp.dns.result.DnsResult;
 import com.mail.smtp.exception.DnsException;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.dns.*;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
-import org.springframework.util.concurrent.ListenableFuture;
 
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+
+import static com.mail.smtp.dns.handler.DnsResponseHandler.A_RECORD_RESULT;
 
 @Component("dnsResolverA")
 @RequiredArgsConstructor
 @Lazy
-//@EnableAsync
 public class DnsResolverA implements DnsResolver
 {
     private final Logger log = LoggerFactory.getLogger("delivery");
@@ -43,8 +35,6 @@ public class DnsResolverA implements DnsResolver
     private final Bootstrap tcpABootstrap;
     private final Bootstrap udpABootstrap;
 
-    //@Async("threadPoolTaskExecutor")
-//    public ListenableFuture<List< DnsResult >> resolveDomainByTcp(String domainName) throws DnsException
     public List< DnsResult > resolveDomainByTcp(String domainName) throws DnsException
     {
         String dnsIp = smtpConfig.getString("smtp.dns.ip", "8.8.8.8");
@@ -71,16 +61,12 @@ public class DnsResolverA implements DnsResolver
         try
         {
             ch.writeAndFlush(query).sync().addListener(
-                    new GenericFutureListener<>()
+                    future ->
                     {
-                        @Override
-                        public void operationComplete(Future< ? super Void > future)
-                        {
-                            if( !future.isSuccess() )
-                                throw new DnsException("fail send query message");
-                            else if( future.isCancelled() )
-                                throw new DnsException("operation cancelled");
-                        }
+                        if( !future.isSuccess() )
+                            throw new DnsException("fail send query message");
+                        else if( future.isCancelled() )
+                            throw new DnsException("operation cancelled");
                     }
             );
 
@@ -101,17 +87,9 @@ public class DnsResolverA implements DnsResolver
             throw new DnsException("fail to resolve A record, interrupted exception");
         }
 
-        List< DnsResult > list = ch.pipeline().get(DnsResponseHandlerA.class).getResult();
-        /*return new AsyncResult<>(list.stream()
-                .map(a -> new DnsResult(a.getType(), a.getRecord()))
-                .collect(Collectors.toList()));*/
-        return list.stream()
-                .map(a -> new DnsResult(a.getType(), a.getRecord()))
-                .collect(Collectors.toList());
+        return ch.attr(A_RECORD_RESULT).get();
     }
 
-    //@Async("threadPoolTaskExecutor")
-    //public ListenableFuture< List<DnsResult> > resolveDomainByUdp(String domainName) throws DnsException
     public List<DnsResult> resolveDomainByUdp(String domainName) throws DnsException
     {
         String dnsIp = smtpConfig.getString("smtp.dns.ip", "8.8.8.8");
@@ -131,16 +109,12 @@ public class DnsResolverA implements DnsResolver
                     .setRecursionDesired(true);
 
             ch.writeAndFlush(query).sync().addListener(
-                    new GenericFutureListener<>()
+                    future ->
                     {
-                        @Override
-                        public void operationComplete(Future< ? super Void > future)
-                        {
-                            if( !future.isSuccess() )
-                                throw new DnsException("fail send query message");
-                            else if( future.isCancelled() )
-                                throw new DnsException("operation cancelled");
-                        }
+                        if( !future.isSuccess() )
+                            throw new DnsException("fail send query message");
+                        else if( future.isCancelled() )
+                            throw new DnsException("operation cancelled");
                     }
             );
 
@@ -159,12 +133,6 @@ public class DnsResolverA implements DnsResolver
             throw new DnsException("fail to resolve A record, interrupted exception");
         }
 
-        List<DnsResult> list = ch.pipeline().get(DnsResponseHandlerA.class).getResult();
-        /*return new AsyncResult<>(list.stream()
-                .map(a -> new DnsResult(a.getType(), a.getRecord()))
-                .collect(Collectors.toList()));*/
-        return list.stream()
-                .map(a -> new DnsResult(a.getType(), a.getRecord()))
-                .collect(Collectors.toList());
+        return ch.attr(A_RECORD_RESULT).get();
     }
 }

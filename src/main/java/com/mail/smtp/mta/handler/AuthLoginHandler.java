@@ -56,7 +56,6 @@ public class AuthLoginHandler<T extends CheckAuth> extends AuthHandler
             log.trace("user pass : {}", userPass);
             super.setUserPass(userPass);
 
-            //boolean bAuth = super.getCheckAuth().checkAuth(super.getUserId(), super.getUserPass());
             boolean bAuth = super.auth();
 
             super.getSmtpData().setAuthed(bAuth);

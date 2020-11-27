@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthPlainHandler<T extends CheckAuth> extends AuthHandler
 {
-    private String plainText;
+    private final String plainText;
     public AuthPlainHandler(SmtpData smtpData, ChannelHandler channelHandler, T auth, String plainText)
     {
         super(smtpData, channelHandler, auth);
@@ -21,7 +21,7 @@ public class AuthPlainHandler<T extends CheckAuth> extends AuthHandler
     }
 
     @Override
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception
+    public void handlerAdded(ChannelHandlerContext ctx)
     {
         log.trace("auth plain channel added");
         if( this.plainText.equals("") )

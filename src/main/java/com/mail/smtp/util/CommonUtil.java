@@ -4,7 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.util.SubnetUtils;
 import org.springframework.util.DigestUtils;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.channels.FileChannel;
@@ -53,8 +56,7 @@ public class CommonUtil
     public static String getMyPath()
     {
         Path relativePath = Paths.get("");
-        String path = relativePath.toAbsolutePath().toString();
-        return path;
+        return relativePath.toAbsolutePath().toString();
     }
 
     public static boolean fileCopy(String sourPath, String destPath)
@@ -63,7 +65,7 @@ public class CommonUtil
                 FileInputStream inputStream = new FileInputStream(sourPath);
                 FileOutputStream outputStream = new FileOutputStream(destPath);
                 FileChannel fcin = inputStream.getChannel();
-                FileChannel fcout = outputStream.getChannel();
+                FileChannel fcout = outputStream.getChannel()
         )
         {
             long size = fcin.size();
