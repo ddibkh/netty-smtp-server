@@ -12,7 +12,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 
-import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
@@ -33,7 +32,7 @@ public class SmtpApplication implements CommandLineRunner, ApplicationListener< 
 	@Override
 	public void run(String... args)
 	{
-		new Thread(() -> {
+		Thread t1 = new Thread(() -> {
 			try
 			{
 				smtpServer.start();
@@ -43,11 +42,13 @@ public class SmtpApplication implements CommandLineRunner, ApplicationListener< 
 				log.error("fail to start server, {}", e.getMessage());
 			}
 
-		}).start();
+		});
+		t1.setDaemon(true);
+		t1.start();
 
 		if( smtpConfig.getInt("smtp.use.ssl", 0).equals(1) )
 		{
-			new Thread(() -> {
+			Thread t2 = new Thread(() -> {
 				try
 				{
 					smtpSSLServer.start();
@@ -56,12 +57,14 @@ public class SmtpApplication implements CommandLineRunner, ApplicationListener< 
 				{
 					log.error("fail to start ssl port server, {}", e.getMessage());
 				}
-			}).start();
+			});
+			t2.setDaemon(true);
+			t2.start();
 		}
 
 		if( smtpConfig.getInt("smtp.use.msa", 0).equals(1) )
 		{
-			new Thread(() -> {
+			Thread t3 = new Thread(() -> {
 				try
 				{
 					smtpMSAServer.start();
@@ -70,7 +73,9 @@ public class SmtpApplication implements CommandLineRunner, ApplicationListener< 
 				{
 					log.error("fail to start submission port server, {}", e.getMessage());
 				}
-			}).start();
+			});
+			t3.setDaemon(true);
+			t3.start();
 		}
 	}
 
