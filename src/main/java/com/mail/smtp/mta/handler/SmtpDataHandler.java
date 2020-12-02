@@ -8,9 +8,10 @@ package com.mail.smtp.mta.handler;
 
 import com.mail.smtp.config.SmtpConfig;
 import com.mail.smtp.data.MailAttribute;
+import com.mail.smtp.data.ResponseData;
+import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.exception.SmtpException;
 import com.mail.smtp.mta.ApplicationContextProvider;
-import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.service.MimeParseService;
 import com.mail.smtp.service.QueuingService;
 import com.mail.smtp.service.SaveMailService;
@@ -22,7 +23,6 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.timeout.ReadTimeoutException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,19 +42,13 @@ public class SmtpDataHandler extends ChannelInboundHandlerAdapter
 	@Override
 	public void channelActive(ChannelHandlerContext ctx)
 	{
-		log.trace("smtp data handler active!! [" + toString() + "]");
+		log.trace("[{}] smtp data handler active!! [{}]", smtpData.getRandomUID(), toString());
 	}
 	
 	@Override
     public void handlerAdded(ChannelHandlerContext ctx)
 	{
-    	log.trace("handlerAdded [" + toString() + "]");
-    	//================================= DEBUG ================================= 
-    	log.trace("clientip : " + smtpData.getClientIP());
-    	log.trace("client port : " + smtpData.getClientPort());
-    	log.trace("mail from : " + smtpData.getMailfrom());
-    	log.trace("rcpt to: " + smtpData.getReceipents());
-    	//================================= DEBUG =================================
+    	log.trace("[{}] handlerAdded [{}]", smtpData.getRandomUID(), toString());
 		SimpleDateFormat formatter = new SimpleDateFormat(
                 "E, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
 
@@ -70,15 +64,15 @@ public class SmtpDataHandler extends ChannelInboundHandlerAdapter
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx)
 	{
-    	log.trace("handlerRemoved [" + toString() + "]");
+    	log.trace("[{}] handlerRemoved [{}]", smtpData.getRandomUID(), toString());
 		Optional.ofNullable(tempEmlPath).ifPresent(path -> {
 			File file = new File(path);
 			if( file.exists() )
 			{
 				if( file.delete() )
-					log.debug("success to deleted temp file, {}", path);
+					log.debug("[{}] success to deleted temp file, {}", smtpData.getRandomUID(), path);
 				else
-					log.debug("fail to delete temp file, {}", path);
+					log.debug("[{}] fail to delete temp file, {}", smtpData.getRandomUID(), path);
 			}
 		});
     }
@@ -101,7 +95,7 @@ public class SmtpDataHandler extends ChannelInboundHandlerAdapter
 			{
 				if( !file.mkdirs() )
 				{
-					log.error("fail to data handler, mkdir temp path failed, {}", tempPath);
+					log.error("[{}] fail to data handler, mkdir temp path failed, {}", smtpData.getRandomUID(), tempPath);
 					throw new SmtpException(458);
 				}
 			}
@@ -117,7 +111,7 @@ public class SmtpDataHandler extends ChannelInboundHandlerAdapter
 			}
 			catch( Exception e )
 			{
-				log.error("fail to save temp eml " + tempBuilder.toString() + ", " + e.getMessage());
+				log.error("[{}] fail to save temp eml {}, {}", smtpData.getRandomUID(), tempBuilder.toString(), e.getMessage());
 				throw new SmtpException(458);
 			}
 
@@ -126,12 +120,12 @@ public class SmtpDataHandler extends ChannelInboundHandlerAdapter
 			MimeParseService mimeParseService = ApplicationContextProvider.getBean(MimeParseService.class);
 			MailAttribute mailAttribute;
 			try{
-				mailAttribute = mimeParseService.getMailAttributeFromEml(tempEmlPath);
+				mailAttribute = mimeParseService.getMailAttributeFromEml(smtpData.getRandomUID(), tempEmlPath);
 				mailAttribute.setConnIP(smtpData.getClientIP());
 				mailAttribute.setMailUid(smtpData.getRandomUID());
 				mailAttribute.setEnvFrom(smtpData.getMailfrom().getAddress());
 			}catch( Exception e ) {
-				log.error("fail to get mail attribute, exception, {}", e.getMessage());
+				log.error("[{}] fail to get mail attribute, exception, {}", smtpData.getRandomUID(), e.getMessage());
 				throw new SmtpException(458);
 			}
 
@@ -147,7 +141,8 @@ public class SmtpDataHandler extends ChannelInboundHandlerAdapter
 			}
 
 			String response = "250 Message accepted for delivery";
-            ctx.writeAndFlush(response + "\r\n");
+            //ctx.writeAndFlush(response + "\r\n");
+			ctx.writeAndFlush(new ResponseData(smtpData.getRandomUID(), response + "\r\n"));
 			smtpData.setCompleteData(true);
             ChannelPipeline cp = ctx.pipeline();
             cp.replace("datahandler", "basehandler", baseHandler);
@@ -165,14 +160,14 @@ public class SmtpDataHandler extends ChannelInboundHandlerAdapter
 	@Override
 	public void channelReadComplete(ChannelHandlerContext ctx)
 	{
-		log.trace("smtpdatahandler channelreadcomplete [" + toString() + "]");
+		log.trace("[{}] smtpdatahandler channelreadcomplete [{}]", smtpData.getRandomUID(), toString());
 		ctx.flush();
 	}
 
 	@Override
 	public void channelUnregistered(ChannelHandlerContext ctx)
 	{
-		log.trace("smtpdatahandler channelUnregistered [" + toString() + "]");
+		log.trace("[{}] smtpdatahandler channelUnregistered [{}]", smtpData.getRandomUID(), toString());
 		ChannelPipeline cp = ctx.pipeline();
 		cp.replace("datahandler", "basehandler", baseHandler);
 	}
@@ -181,20 +176,20 @@ public class SmtpDataHandler extends ChannelInboundHandlerAdapter
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 	{
 		if( cause instanceof ReadTimeoutException )
-			log.error("exception occured, read timed out");
+			log.error("[{}] exception occured, read timed out", smtpData.getRandomUID());
 		else if( cause instanceof SmtpException )
 		{
-			log.error("exception occured, error code : {}, message : {}",
+			log.error("[{}] exception occured, error code : {}, message : {}", smtpData.getRandomUID(),
 					( (SmtpException) cause ).getErrorCode(), cause.getMessage());
-			ctx.writeAndFlush(( (SmtpException) cause ).getResponse());
+			ctx.writeAndFlush(new ResponseData(smtpData.getRandomUID(), ((SmtpException) cause).getResponse()));
 		}
 		else
-			log.error("exception occured, {}", cause.getMessage());
+			log.error("[{}] exception occured, {}", smtpData.getRandomUID(), cause.getMessage());
 
 		if( log.isTraceEnabled() )
     		cause.printStackTrace();
 
         ctx.close();
-		MDC.clear();
+		//MDC.clear();
     }
 }

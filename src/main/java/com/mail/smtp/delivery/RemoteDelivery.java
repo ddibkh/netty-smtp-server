@@ -1,8 +1,9 @@
 package com.mail.smtp.delivery;
 
 import com.mail.smtp.data.MailAttribute;
-import com.mail.smtp.dns.DnsResolver;
-import com.mail.smtp.dns.result.MXResult;
+import com.mail.smtp.dns.resolver.DnsResolver;
+import com.mail.smtp.dns.resolver.RequestType;
+import com.mail.smtp.dns.result.DnsResult;
 import com.mail.smtp.exception.DeliveryException;
 import com.mail.smtp.exception.DnsException;
 import lombok.Data;
@@ -11,17 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.mail.Address;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component("remoteDelivery")
@@ -31,7 +27,7 @@ public class RemoteDelivery implements IDeliverySpec
 {
     private final Logger log = LoggerFactory.getLogger("delivery");
     private final Executor deliveryPoolExecutor;
-    private final DnsResolver dnsResolverMX;
+    private final DnsResolver dnsResolverImpl;
     private final SendMail sendMail;
 
     @Override
@@ -64,30 +60,32 @@ public class RemoteDelivery implements IDeliverySpec
             /*
             메일 발송을 위한 수신 도메인의 MX 레코드를 구해야 한다.
              */
-            List<MXResult> dnsList = dnsResolverMX.resolveDomainByTcp(domainName);
-            dnsList.stream().forEach(mx -> log.info("mx info : {}", mx.toString()));
-            for( MXResult record : dnsList )
+            DnsResult dnsResult = dnsResolverImpl.resolveDomainByTcp(domainName, RequestType.REQUEST_MX);
+            log.info("[{}] mx info : {}", mailAttribute.getMailUid(), dnsResult.toString());
+            List<String> dnsList = dnsResult.getRecords();
+
+            for( String record : dnsList )
             {
-                log.info("try to send MX host : {}", record.getRecord());
+                log.info("[{}] try to send MX host : {}", mailAttribute.getMailUid(), record);
                 Address[] addresses = new Address[1];
                 addresses[0] = ia;
                 try
                 {
-                    sendMail.send(mailAttribute.getEnvFrom(),
-                            addresses, record.getRecord(), emlPath);
+                    sendMail.send(mailAttribute.getMailUid(), mailAttribute.getEnvFrom(),
+                            addresses, record, emlPath);
                     bSend = true;
                     break;
                 }
                 catch( DeliveryException de )
                 {
-                    errList.add("MX { " + record.getRecord() + " }, " + de.getMessage());
+                    errList.add("MX { " + record + " }, " + de.getMessage());
                 }
             }
         }
         catch( DnsException de )
         {
-            log.error("fail to MX record resolved, {}", de.getMessage());
-            errList.add(String.format("failed to resolve mx recoed, {}", domainName));
+            log.error("[{}] fail to MX record resolved, {}", mailAttribute.getMailUid(), de.getMessage());
+            errList.add(String.format("failed to resolve mx recoed, %s", domainName));
         }
         finally
         {

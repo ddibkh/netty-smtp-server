@@ -1,5 +1,6 @@
 package com.mail.smtp.mta.protocol;
 
+import com.mail.smtp.data.ResponseData;
 import com.mail.smtp.exception.SmtpException;
 import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.data.UserVO;
@@ -22,10 +23,11 @@ public class DATA
         optMailFrom.orElseThrow(() -> new SmtpException(503));
 
         if( smtpData.getListRcptTo().isEmpty() )
-            new SmtpException(503);
+            throw new SmtpException(503);
 
         String msg = "354 End data with <CR><LF>.<CR><LF>";
-        ctx.write(msg + "\r\n");
+        //ctx.write(msg + "\r\n");
+        ctx.write(new ResponseData(smtpData.getRandomUID(), msg + "\r\n"));
         ChannelPipeline cp = ctx.pipeline();
         cp.replace("basehandler", "datahandler", new SmtpDataHandler(smtpData, ctx.handler()));
     }

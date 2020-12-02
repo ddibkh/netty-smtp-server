@@ -56,17 +56,11 @@ public class SaveMailService
 
         File file = new File(stringBuilder.toString());
         if( !file.exists() )
-        {
-            if( !file.mkdirs() )
-            {
-                log.error("fail to save sent box, mkdir failed, {}", stringBuilder.toString());
-                return false;
-            }
-        }
+            file.mkdirs();
 
         stringBuilder.append(uuid).append(".eml");
 
-        log.info("try to save sent box, path : {}", stringBuilder.toString());
+        log.info("[{}] try to save sent box, path : {}", smtpData.getRandomUID(), stringBuilder.toString());
 
         if( !CommonUtil.fileCopy(tempPath, stringBuilder.toString()) )
             throw new SmtpException(458);
@@ -81,7 +75,7 @@ public class SaveMailService
 
         mailListRepository.save(mailListEntity);
 
-        log.info("success to save sent box, path : {}", stringBuilder.toString());
+        log.info("[{}] success to save sent box, path : {}", smtpData.getRandomUID(), stringBuilder.toString());
 
         return true;
     }
@@ -115,14 +109,14 @@ public class SaveMailService
         {
             if( !file.mkdirs() )
             {
-                log.error("fail to save user mail box, mkdir failed, {}", stringBuilder.toString());
+                log.error("[{}] fail to save user mail box, mkdir failed, {}", mailAttribute.getMailUid(), stringBuilder.toString());
                 return false;
             }
         }
 
         stringBuilder.append(mailAttribute.getMailUid()).append(".eml");
 
-        log.info("try to user mail box, path : {}", stringBuilder.toString());
+        log.info("[{}] try to user mail box, path : {}", mailAttribute.getMailUid(), stringBuilder.toString());
 
         if( !CommonUtil.fileCopy(tempPath, stringBuilder.toString()) )
             throw new SmtpException(458);
@@ -137,7 +131,7 @@ public class SaveMailService
 
         mailListRepository.save(mailListEntity);
 
-        log.info("success to save user box, path : {}", stringBuilder.toString());
+        log.info("[{}] success to save user box, path : {}", mailAttribute.getMailUid(), stringBuilder.toString());
 
         return true;
     }

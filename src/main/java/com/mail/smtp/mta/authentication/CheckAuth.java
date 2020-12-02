@@ -6,10 +6,8 @@ import com.mail.smtp.exception.AuthException;
 import com.mail.smtp.mta.ApplicationContextProvider;
 import com.mail.smtp.repository.DomainRepository;
 import com.mail.smtp.repository.UserRepository;
-import org.springframework.stereotype.Component;
 
 import java.util.Optional;
-import java.util.function.Predicate;
 
 @FunctionalInterface
 public interface CheckAuth
@@ -41,5 +39,5 @@ public interface CheckAuth
         return optUser.get();
     }
 
-    boolean checkAuth(String id, String pwd);
+    boolean checkAuth(String id, String pwd, String uid);
 }

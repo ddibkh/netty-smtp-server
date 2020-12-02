@@ -1,4 +1,4 @@
-package com.mail.smtp.dns;
+package com.mail.smtp.dns.configuration;
 
 import com.mail.smtp.config.SmtpConfig;
 import com.mail.smtp.dns.handler.DnsResponseHandlerA;

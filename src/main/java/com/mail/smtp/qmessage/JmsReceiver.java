@@ -7,11 +7,9 @@ import com.mail.smtp.exception.DeliveryException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.util.concurrent.CompletionException;
 
@@ -30,8 +28,8 @@ public class JmsReceiver
     @JmsListener(destination = "mta.queue")
     public void receiveQueueMessage(QueueData queueData)
     {
-        MDC.put("UID", queueData.getMailAttribute().getMailUid());
-        log.info("receive queue message");
+        //MDC.put("UID", queueData.getMailAttribute().getMailUid());
+        log.info("[{}] receive queue message", queueData.getMailUid());
 
         /*
         delivery mail
@@ -49,11 +47,11 @@ public class JmsReceiver
         }
         catch( DeliveryException de )
         {
-            log.info("local delivery, {}", de.getMessage());
+            log.info("[{}] local delivery, {}", queueData.getMailUid(), de.getMessage());
         }
         catch( CompletionException ce )
         {
-            log.info("local delivery, {}", ce.getCause().getMessage());
+            log.info("[{}] local delivery, {}", queueData.getMailUid(), ce.getCause().getMessage());
         }
 
         //remote delivery
@@ -61,26 +59,22 @@ public class JmsReceiver
         {
             delivery.delivery(queueData.getToRemote(), queueData.getQueuePath(), queueData.getMailAttribute(), remoteDelivery);
         }
-        catch( DeliveryException de )
+        catch( DeliveryException | CompletionException de )
         {
-            log.info("remote delivery, {}", de.getMessage());
-        }
-        catch( CompletionException ce )
-        {
-            log.info("remote delivery, {}", ce.getMessage());
+            log.info("[{}] remote delivery, {}", queueData.getMailUid(), de.getMessage());
         }
 
-        deleteQFile(queueData.getQueuePath());
+        deleteQFile(queueData.getMailUid(), queueData.getQueuePath());
 
-        log.debug("end of jms receiver function");
+        log.debug("[{}] end of jms receiver process", queueData.getMailUid());
 
-        MDC.remove("UID");
+        //MDC.remove("UID");
     }
 
-    private void deleteQFile(String queuePath)
+    private void deleteQFile(String uid, String queuePath)
     {
         File queueFile = new File(queuePath);
         if( queueFile.exists() && queueFile.delete() )
-            log.info("queue file deleted [{}]", queuePath);
+            log.info("[{}] queue file deleted [{}]", uid, queuePath);
     }
 }

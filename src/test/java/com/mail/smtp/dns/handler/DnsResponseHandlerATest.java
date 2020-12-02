@@ -1,9 +1,11 @@
 package com.mail.smtp.dns.handler;
 
 import com.mail.smtp.config.SmtpConfig;
-import com.mail.smtp.dns.DnsConfiguration;
-import com.mail.smtp.dns.DnsResolver;
-import com.mail.smtp.dns.DnsResolverA;
+import com.mail.smtp.dns.configuration.BootstrapFactory;
+import com.mail.smtp.dns.configuration.DnsConfiguration;
+import com.mail.smtp.dns.resolver.DnsResolver;
+import com.mail.smtp.dns.resolver.DnsResolverImpl;
+import com.mail.smtp.dns.resolver.RequestType;
 import com.mail.smtp.dns.result.DnsResult;
 import com.mail.smtp.exception.DnsException;
 import org.junit.jupiter.api.Test;
@@ -19,14 +21,15 @@ import java.util.stream.Collectors;
 
 @SpringBootTest( classes = {
         DnsConfiguration.class,
+        BootstrapFactory.class,
         DnsResolver.class,
-        DnsResolverA.class,
+        DnsResolverImpl.class,
         SmtpConfig.class
 } )
 class DnsResponseHandlerATest
 {
-    @Resource(name = "dnsResolverA")
-    private DnsResolver dnsResolver;
+    @Resource(name="dnsResolverImpl")
+    private DnsResolverImpl dnsResolverImpl;
 
     @Test
     void dnsResolveAsync()
@@ -43,10 +46,10 @@ class DnsResponseHandlerATest
                 domainName = "kakao.com";
 
             CompletableFuture< Void > completableFuture = CompletableFuture.supplyAsync(() ->
-                    dnsResolver.resolveDomainByTcp(domainName))
+                    dnsResolverImpl.resolveDomainByTcp(domainName, RequestType.REQUEST_A))
                     .exceptionally(throwable -> {
                         System.out.println("exceptionally : " + throwable.getMessage());
-                        return Collections.emptyList();
+                        return new DnsResult(DnsResult.Type.A, domainName, Collections.emptyList());
                     })
                     .thenAccept(System.out::println);
 
@@ -81,8 +84,8 @@ class DnsResponseHandlerATest
             else
                 domainName = "kakao.com";
 
-            List< DnsResult > list = dnsResolver.resolveDomainByUdp(domainName);
-            list.forEach(System.out::println);
+            DnsResult result = dnsResolverImpl.resolveDomainByUdp(domainName, RequestType.REQUEST_A);
+            System.out.println(result);
         }
     }
 }

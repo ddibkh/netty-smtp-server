@@ -44,17 +44,11 @@ public class QueuingService
 
             File file = new File(queuePath);
             if( !file.exists() )
-            {
-                if( !file.mkdirs() )
-                {
-                    log.error("fail to queueing, mkdir failed, {}", queuePath);
-                    throw new SmtpException(458);
-                }
-            }
+                file.mkdirs();
 
             String strEmlName = queuePath + smtpData.getRandomUID() + ".eml";
 
-            log.info("try to queuing, path : {}", strEmlName);
+            log.info("[{}] try to queuing, path : {}", smtpData.getRandomUID(), strEmlName);
 
             if( !CommonUtil.fileCopy(tempPath, strEmlName) )
                 throw new SmtpException(458);
@@ -74,8 +68,8 @@ public class QueuingService
                     mailAttribute
             );
             jmsSender.sendMessageQueue(queueData);
-            log.info("success to queuing");
-        }, () -> log.info("skip to queuing not exist receipients"));
+            log.info("[{}] success to queuing", smtpData.getRandomUID());
+        }, () -> log.info("[{}] skip to queuing not exist receipients", smtpData.getRandomUID()));
 
         return true;
     }

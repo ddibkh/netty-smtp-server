@@ -1,5 +1,6 @@
 package com.mail.smtp.mta.handler;
 
+import com.mail.smtp.data.ResponseData;
 import com.mail.smtp.exception.SmtpException;
 import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.mta.authentication.CheckAuth;
@@ -23,9 +24,11 @@ public class AuthPlainHandler<T extends CheckAuth> extends AuthHandler
     @Override
     public void handlerAdded(ChannelHandlerContext ctx)
     {
-        log.trace("auth plain channel added");
+        log.trace("[{}] auth plain channel added", getSmtpData().getRandomUID());
         if( this.plainText.equals("") )
-            ctx.writeAndFlush("334\r\n");
+            //ctx.writeAndFlush("334\r\n");
+            ctx.writeAndFlush(new ResponseData(super.getSmtpData().getRandomUID(),
+                    "334\r\n"));
         else
             channelRead(ctx, this.plainText);
     }
@@ -47,7 +50,6 @@ public class AuthPlainHandler<T extends CheckAuth> extends AuthHandler
                 return c;
         }).collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
 
-        log.debug("auth plain : {}", authPlain);
         String[] plainText = authPlain.split(",");
 
         if( plainText.length == 3 )
@@ -64,13 +66,15 @@ public class AuthPlainHandler<T extends CheckAuth> extends AuthHandler
             super.getSmtpData().setAuthed(bAuth);
 
             if( bAuth )
-                ctx.writeAndFlush("235 Authentication successful\r\n");
+                //ctx.writeAndFlush("235 Authentication successful\r\n");
+                ctx.writeAndFlush(new ResponseData(super.getSmtpData().getRandomUID(),
+                        "235 Authentication successful\r\n"));
             else
                 throw new SmtpException(535);
         }
         else
         {
-            log.error("fail to auth plain, invalid data format {}", line);
+            log.error("[{}] fail to auth plain, invalid data format {}", super.getSmtpData().getRandomUID(), line);
             throw new SmtpException(501);
         }
 

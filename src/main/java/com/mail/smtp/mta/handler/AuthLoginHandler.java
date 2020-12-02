@@ -1,5 +1,6 @@
 package com.mail.smtp.mta.handler;
 
+import com.mail.smtp.data.ResponseData;
 import com.mail.smtp.exception.SmtpException;
 import com.mail.smtp.mta.Define;
 import com.mail.smtp.data.SmtpData;
@@ -24,9 +25,11 @@ public class AuthLoginHandler<T extends CheckAuth> extends AuthHandler
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) {
-        log.trace("auth login channel added");
+        log.trace("[{}] auth login channel added", super.getSmtpData().getRandomUID());
         //request Username
-        ctx.writeAndFlush("334 VXNlcm5hbWU6\r\n");
+        //ctx.writeAndFlush("334 VXNlcm5hbWU6\r\n");
+        ctx.writeAndFlush(new ResponseData(super.getSmtpData().getRandomUID(),
+                "334 VXNlcm5hbWU6\r\n"));
     }
 
     @Override
@@ -43,7 +46,9 @@ public class AuthLoginHandler<T extends CheckAuth> extends AuthHandler
             super.setUserId(userId);
 
             //request Password
-            ctx.writeAndFlush("334 UGFzc3dvcmQ6\r\n");
+            //ctx.writeAndFlush("334 UGFzc3dvcmQ6\r\n");
+            ctx.writeAndFlush(new ResponseData(super.getSmtpData().getRandomUID(),
+                    "334 UGFzc3dvcmQ6\r\n"));
             now_status = Define.AUTH_PROCESS.PASSWORD;
         }
         //password
@@ -53,7 +58,7 @@ public class AuthLoginHandler<T extends CheckAuth> extends AuthHandler
             byte[] bytes = new byte[bb.readableBytes()];
             bb.readBytes(bytes);
             String userPass = new String(bytes);
-            log.trace("user pass : {}", userPass);
+            log.trace("[{}] user pass : {}", super.getSmtpData().getRandomUID(), userPass);
             super.setUserPass(userPass);
 
             boolean bAuth = super.auth();
@@ -66,7 +71,8 @@ public class AuthLoginHandler<T extends CheckAuth> extends AuthHandler
             else
                 throw new SmtpException(535);
 
-            ctx.writeAndFlush(response);
+            //ctx.writeAndFlush(response);
+            ctx.writeAndFlush(new ResponseData(super.getSmtpData().getRandomUID(), response));
             replaceBaseHandler(ctx);
         }
     }

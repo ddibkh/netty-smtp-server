@@ -57,6 +57,9 @@ spring:
       session-cache-size: 5
     listener:
       acknowledge-mode: auto
+      # 동시 수행 consumer (내부 threadpool 설정으로 보임)
+      concurrency: 10
+      max-concurrency: 20
     template:
       delivery-mode: persistent
 

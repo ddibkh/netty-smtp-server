@@ -1,6 +1,7 @@
 package com.mail.smtp.mta.protocol;
 
 import com.mail.smtp.config.SmtpConfig;
+import com.mail.smtp.data.ResponseData;
 import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.util.CommonUtil;
 import io.netty.channel.ChannelHandlerContext;
@@ -31,6 +32,7 @@ public class EHLO
 
         ehlo += "250 OK\r\n";
 
-        ctx.write(ehlo);
+        //ctx.write(ehlo);
+        ctx.write(new ResponseData(smtpData.getRandomUID(), ehlo));
     }
 }

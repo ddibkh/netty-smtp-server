@@ -9,13 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 public class Sha256PwdAuth implements CheckAuth
 {
     @Override
-    public boolean checkAuth(String id, String pwd)
+    public boolean checkAuth(String id, String pwd, String uid)
     {
         UserEntity user;
         try{
             user = CheckAuth.getUser(id);
         }catch( AuthException ae ) {
-            log.error("fail to auth, {}", ae.getMessage());
+            log.error("[{}] fail to auth, {}", uid, ae.getMessage());
             return false;
         }
 

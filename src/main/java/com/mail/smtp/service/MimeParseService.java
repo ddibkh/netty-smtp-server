@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class MimeParseService
 {
-    public MailAttribute getMailAttributeFromEml(String emlPath) throws Exception
+    public MailAttribute getMailAttributeFromEml(String uid, String emlPath) throws Exception
     {
         //extrace mail attribute
         Properties props = System.getProperties();
@@ -36,12 +36,12 @@ public class MimeParseService
         }
         catch( FileNotFoundException fnfe )
         {
-            log.error("fail to save sent box, file not found exception, {}", fnfe.getMessage());
+            log.error("[{}] fail to save sent box, file not found exception, {}", uid, fnfe.getMessage());
             throw new Exception(fnfe);
         }
         catch( IOException ie)
         {
-            log.error("fail to save sent box, io exception, {}", ie.getMessage());
+            log.error("[{}] fail to save sent box, io exception, {}", uid, ie.getMessage());
             throw new Exception(ie);
         }
 
@@ -63,7 +63,7 @@ public class MimeParseService
                                     }
                                     catch( UnsupportedEncodingException e )
                                     {
-                                        log.error("fail to decode header To address, {}", address.toString());
+                                        log.error("[{}] fail to decode header To address, {}", uid, address.toString());
                                         return "";
                                     }
                                 })
@@ -83,7 +83,7 @@ public class MimeParseService
                                     }
                                     catch( UnsupportedEncodingException e )
                                     {
-                                        log.error("fail to decode header Cc address, {}", address.toString());
+                                        log.error("[{}] fail to decode header Cc address, {}", uid, address.toString());
                                         return "";
                                     }
                                 })
@@ -103,7 +103,7 @@ public class MimeParseService
                                     }
                                     catch( UnsupportedEncodingException e )
                                     {
-                                        log.error("fail to decode header Bcc address, {}", address.toString());
+                                        log.error("[{}] fail to decode header Bcc address, {}", uid, address.toString());
                                         return "";
                                     }
                                 })

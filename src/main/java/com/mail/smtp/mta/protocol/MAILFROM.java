@@ -1,6 +1,7 @@
 package com.mail.smtp.mta.protocol;
 
 import com.mail.smtp.config.SmtpConfig;
+import com.mail.smtp.data.ResponseData;
 import com.mail.smtp.exception.SmtpException;
 import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.data.UserVO;
@@ -41,6 +42,7 @@ public class MAILFROM
         UserVO userVO = userService.fetchUserVO(commandData);
         smtpData.setMailfrom(userVO);
         String msg = "250 " + userVO.getAddress() + " ... Sender OK\r\n";
-        ctx.writeAndFlush(msg);
+        //ctx.writeAndFlush(msg);
+        ctx.writeAndFlush(new ResponseData(smtpData.getRandomUID(), msg));
     }
 }

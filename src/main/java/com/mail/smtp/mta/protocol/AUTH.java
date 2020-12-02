@@ -1,5 +1,6 @@
 package com.mail.smtp.mta.protocol;
 
+import com.mail.smtp.data.ResponseData;
 import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.mta.authentication.Sha256PwdAuth;
 import com.mail.smtp.mta.handler.AuthLoginHandler;
@@ -32,8 +33,9 @@ public class AUTH
         }
         else
         {
-            log.error("unsupported AUTH command : AUTH {}", commandData);
-            ctx.writeAndFlush("500 unsupported AUTH command\r\n");
+            log.error("[{}] unsupported AUTH command : AUTH {}", smtpData.getRandomUID(), commandData);
+            //ctx.writeAndFlush("500 unsupported AUTH command\r\n");
+            ctx.writeAndFlush(new ResponseData(smtpData.getRandomUID(), "500 unsupported AUTH command\r\n"));
         }
     }
 

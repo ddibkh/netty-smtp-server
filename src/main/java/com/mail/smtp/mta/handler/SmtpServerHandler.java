@@ -6,6 +6,7 @@ package com.mail.smtp.mta.handler;
  * Modifier: kkwang
  */
 
+import com.mail.smtp.data.ResponseData;
 import com.mail.smtp.data.SmtpData;
 import com.mail.smtp.exception.SmtpException;
 import com.mail.smtp.mta.ApplicationContextProvider;
@@ -17,7 +18,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutException;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 
 import java.net.InetSocketAddress;
 
@@ -43,21 +43,20 @@ public class SmtpServerHandler extends ChannelDuplexHandler
         InetSocketAddress sa = ((InetSocketAddress) ctx.channel().remoteAddress());
         String clientip = sa.getAddress().getHostAddress();
 
-        MDC.put("IP", clientip);
-        MDC.put("UID", smtpData.getRandomUID());
         int port = sa.getPort();
         smtpData.setClientIP(clientip);
         smtpData.setClientPort(port);
 
-        log.info("connected " + clientip + ":" + port);
-        ctx.writeAndFlush("220 " + CommonUtil.getHostName() + " ESMTP\r\n");
+        log.info("[{}] connected {}:{}", smtpData.getRandomUID(), clientip, port);
+        ctx.writeAndFlush(new ResponseData(smtpData.getRandomUID(),
+                "220 " + CommonUtil.getHostName() + " ESMTP\r\n"));
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg)
     {
         String line = (String)msg;
-        log.info(">>> {}", line);
+        log.info("[{}] >>> {}", smtpData.getRandomUID(), line);
         ProtocolService protocol = ApplicationContextProvider.getBean(ProtocolService.class);
         protocol.process(ctx, line, smtpData);
     }
@@ -66,51 +65,50 @@ public class SmtpServerHandler extends ChannelDuplexHandler
     public void channelInactive(ChannelHandlerContext ctx)
     {
     	ctx.close();
-    	log.info("closed " + smtpData.getClientIP() + ":" + smtpData.getClientPort());
-        MDC.clear();
+    	log.info("[{}] closed {}:{}", smtpData.getRandomUID(), smtpData.getClientIP() ,smtpData.getClientPort());
+        //MDC.clear();
     }
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx)
     {
-        log.trace("handlerAdded [" + toString() + "]");
+        log.trace("[{}] handlerAdded [{}", smtpData.getRandomUID(), toString());
     }
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx)
     {
-        log.trace("handlerRemoved [" + toString() + "]");
+        log.trace("[{}] handlerRemoved [{}]", smtpData.getRandomUID(), toString());
     }
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx)
     {
-        log.trace("channelRegistered [" + toString() + "]");
+        log.trace("[{}] channelRegistered [{}]", smtpData.getRandomUID(), toString());
     }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx)
     {
-        log.trace("channelUnRegistered [" + toString() + "]");
+        log.trace("[{}] channelUnRegistered [{}]", smtpData.getRandomUID(), toString());
     }
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx)
     {
-        //log.trace("channelReadComplete [" + toString() + "]");
         ctx.flush();
     }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt)
     {
-        log.trace("userEventTriggered [" + toString() + "]");
+        log.trace("[{}] userEventTriggered [{}]", smtpData.getRandomUID(), toString());
     }
 
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx)
     {
-        log.trace("channelWritabilityChanged [" + toString() + "]");
+        log.trace("[{}] channelWritabilityChanged [{}]", smtpData.getRandomUID(), toString());
     }
     
     @Override
@@ -118,30 +116,31 @@ public class SmtpServerHandler extends ChannelDuplexHandler
     {
         if( cause instanceof ReadTimeoutException )
         {
-            log.error("exception occured, read timed out");
+            log.error("[{}] exception occured, read timed out", smtpData.getRandomUID());
             ctx.close();
         }
         else if( cause instanceof WriteTimeoutException )
         {
-            log.error("exceptions occured, write timed out");
+            log.error("[{}] exceptions occured, write timed out", smtpData.getRandomUID());
             ctx.close();
         }
         else if( cause instanceof SmtpException )
         {
-            log.error("exception occured, error code : {}, message : {}",
+            log.error("[{}] exception occured, error code : {}, message : {}", smtpData.getRandomUID(),
                     ( (SmtpException) cause ).getErrorCode(), cause.getMessage());
-            ctx.writeAndFlush(( (SmtpException) cause ).getResponse());
+            //ctx.writeAndFlush(( (SmtpException) cause ).getResponse());
+            ctx.writeAndFlush(new ResponseData(smtpData.getRandomUID(), ( (SmtpException) cause ).getResponse()));
         }
         else
         {
-            log.error("exception occured, {}", cause.getMessage());
+            log.error("[{}] exception occured, {}", smtpData.getRandomUID(), cause.getMessage());
             ctx.close();
         }
 
     	if( log.isTraceEnabled() )
     	    cause.printStackTrace();
 
-        MDC.clear();
+        //MDC.clear();
     }
 }
 

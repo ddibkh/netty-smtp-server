@@ -1,10 +1,11 @@
 package com.mail.smtp.dns.handler;
 
 import com.mail.smtp.config.SmtpConfig;
-import com.mail.smtp.dns.DnsConfiguration;
-import com.mail.smtp.dns.DnsResolver;
-import com.mail.smtp.dns.DnsResolverA;
-import com.mail.smtp.dns.DnsResolverMX;
+import com.mail.smtp.dns.configuration.BootstrapFactory;
+import com.mail.smtp.dns.configuration.DnsConfiguration;
+import com.mail.smtp.dns.resolver.DnsResolver;
+import com.mail.smtp.dns.resolver.DnsResolverImpl;
+import com.mail.smtp.dns.resolver.RequestType;
 import com.mail.smtp.dns.result.DnsResult;
 import com.mail.smtp.exception.DnsException;
 import org.junit.jupiter.api.Test;
@@ -20,13 +21,14 @@ import java.util.stream.Collectors;
 
 @SpringBootTest( classes = {
         DnsConfiguration.class,
+        BootstrapFactory.class,
         DnsResolver.class,
-        DnsResolverMX.class,
+        DnsResolverImpl.class,
         SmtpConfig.class
 } )
 class DnsResponseHandlerMXTest
 {
-    @Resource(name = "dnsResolverMX")
+    @Resource(name = "dnsResolverImpl")
     private DnsResolver dnsResolver;
 
     @Test
@@ -44,7 +46,7 @@ class DnsResponseHandlerMXTest
                 domainName = "kakao.com";
 
             CompletableFuture< Void > completableFuture = CompletableFuture.supplyAsync(() ->
-                    dnsResolver.resolveDomainByTcp(domainName))
+                    dnsResolver.resolveDomainByTcp(domainName, RequestType.REQUEST_MX))
                     .exceptionally(throwable -> {
                         System.out.println("exceptionally : " + throwable.getMessage());
                         return Collections.emptyList();
@@ -82,8 +84,8 @@ class DnsResponseHandlerMXTest
             else
                 domainName = "kakao.com";
 
-            List< DnsResult > list = dnsResolver.resolveDomainByUdp(domainName);
-            list.stream().forEach(System.out::println);
+            DnsResult result = dnsResolver.resolveDomainByUdp(domainName, RequestType.REQUEST_MX);
+            System.out.println(result);
         }
     }
 }

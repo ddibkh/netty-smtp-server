@@ -78,7 +78,7 @@ public class ProtocolService implements IProtocol
                 mailFrom.process(ctx, smtpData, commandData);
                 break;
             case "NOOP":
-                noop.process(ctx);
+                noop.process(ctx, smtpData);
                 break;
             case "RCPT TO":
                 if( commandData.equals("") )
@@ -92,10 +92,10 @@ public class ProtocolService implements IProtocol
                 rset.process(ctx, smtpData);
                 break;
             case "QUIT":
-                quit.process(ctx);
+                quit.process(ctx, smtpData);
                 break;
             default:
-                log.error("unrecognized command : {}", command);
+                log.error("[{}] unrecognized command : {}", smtpData.getRandomUID(), command);
                 throw new SmtpException(500);
         }
     }

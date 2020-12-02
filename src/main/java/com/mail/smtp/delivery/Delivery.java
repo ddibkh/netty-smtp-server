@@ -34,11 +34,22 @@ public class Delivery
 
         List< CompletableFuture<Void> > listFuture = to.stream()
                 .map(address -> CompletableFuture.supplyAsync(() -> spec.delivery(address, queuePath, mailAttribute), deliveryPoolExecutor)
-                        .thenAccept((result) -> log.info("{}", result.toString())))
+                        .exceptionally(throwable -> {
+                            log.error("[{}] fail to delivery exception occured, {}", mailAttribute.getMailUid(), throwable.getMessage());
+                            DeliveryResult deliveryResult = new DeliveryResult();
+                            deliveryResult.setResult(DeliveryResult.DResult.FAILURE);
+                            deliveryResult.setEnvToAddress(address);
+                            deliveryResult.setMessage(throwable.getMessage());
+                            return deliveryResult;
+                        })
+                        .thenAccept((result) -> log.info("[{}] {}", mailAttribute.getMailUid(), result.toString())))
                 .collect(Collectors.toList());
 
         listFuture.stream().map(CompletableFuture::join).collect(Collectors.toList());
 
-        log.debug("end of delivery function");
+        if( spec instanceof LocalDelivery )
+            log.debug("[{}] end of local delivery", mailAttribute.getMailUid());
+        else
+            log.debug("[{}] end of remote delivery", mailAttribute.getMailUid());
     }
 }

@@ -3,7 +3,6 @@ package com.mail.smtp.delivery;
 import com.mail.smtp.data.MailAttribute;
 import com.mail.smtp.data.UserVO;
 import com.mail.smtp.entity.MailBoxEntity;
-import com.mail.smtp.exception.DeliveryException;
 import com.mail.smtp.exception.SmtpException;
 import com.mail.smtp.service.SaveMailService;
 import com.mail.smtp.service.UserService;
@@ -13,11 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
 
 @Component("localDelivery")
 @Data

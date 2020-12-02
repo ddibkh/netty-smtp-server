@@ -98,6 +98,9 @@ spring:
         listener:
             # message 를 consume 한 순간 큐에서 삭제. (처리가 실패한 수신자에 대해서는 다시 queuing)
             acknowledge-mode: auto
+            # 동시처리를 위한 스레드풀 설정
+            concurrency: 10
+            max-concurrency: 20
         template:
             delivery-mode: persistent
 

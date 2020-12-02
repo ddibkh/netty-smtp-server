@@ -1,7 +1,11 @@
 package com.mail.smtp.delivery;
 
 import com.mail.smtp.config.SmtpConfig;
+import com.mail.smtp.dns.resolver.DnsResolver;
+import com.mail.smtp.dns.resolver.RequestType;
+import com.mail.smtp.dns.result.DnsResult;
 import com.mail.smtp.exception.DeliveryException;
+import com.mail.smtp.exception.DnsException;
 import com.sun.mail.util.MailSSLSocketFactory;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +28,8 @@ public class SendMail
     private final Logger log = LoggerFactory.getLogger("delivery");
     private final SmtpConfig smtpConfig;
 
-    public void send(@NonNull String envFrom,
+    public void send(@NonNull String uid,
+                     @NonNull String envFrom,
                      @NonNull Address[] to,
                      @NonNull String smtpHost,
                      @NonNull String mimeFilePath) throws DeliveryException
@@ -62,8 +67,8 @@ public class SendMail
             //보안 연결 실패시 일반포트로 재시도.
             if( bSecure )
             {
-                log.error("fail to delivery by secure mode, {}", me.getMessage());
-                log.info("retry normal mode");
+                log.error("[{}] fail to delivery by secure mode, {}", uid, me.getMessage());
+                log.info("[{}] retry normal mode", uid);
                 resendNormal(bDebug, envFrom, to, smtpHost, mimeFilePath);
             }
             else

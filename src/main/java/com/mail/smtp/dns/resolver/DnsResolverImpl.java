@@ -1,61 +1,52 @@
-/*
-auther : ddibkh
-description : DNS resolver
-reference : https://github.com/netty/netty/tree/4.1/example/src/main/java/io/netty/example/dns
- */
-
-package com.mail.smtp.dns;
+package com.mail.smtp.dns.resolver;
 
 import com.mail.smtp.config.SmtpConfig;
+import com.mail.smtp.dns.configuration.BootstrapFactory;
 import com.mail.smtp.dns.result.DnsResult;
 import com.mail.smtp.exception.DnsException;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.dns.*;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import static com.mail.smtp.dns.handler.DnsResponseHandler.TXT_RECORD_RESULT;
+import static com.mail.smtp.dns.handler.DnsResponseHandler.ERROR_MSG;
+import static com.mail.smtp.dns.handler.DnsResponseHandler.RECORD_RESULT;
 
-@Component("dnsResolverTXT")
+@Component("dnsResolverImpl")
 @RequiredArgsConstructor
-@Lazy
-public class DnsResolverTXT implements DnsResolver
+public class DnsResolverImpl implements DnsResolver
 {
-    private final Logger log = LoggerFactory.getLogger("delivery");
     private final SmtpConfig smtpConfig;
-    private final Bootstrap tcpTxtBootstrap;
-    private final Bootstrap udpTxtBootstrap;
+    private final BootstrapFactory bootstrapFactory;
 
-    public List< DnsResult > resolveDomainByTcp(String domainName) throws DnsException
+    @Override
+    public DnsResult resolveDomainByTcp(String domainName,
+                                        RequestType requestType) throws DnsException
     {
         String dnsIp = smtpConfig.getString("smtp.dns.ip", "8.8.8.8");
-        Integer dnsTimeout = smtpConfig.getInt("smtp.dns.timeout", 30);
+        Integer dnsTimeout = smtpConfig.getInt("smtp.dns.timeout", 10);
 
-        short randomID = (short)new Random().nextInt(1 << 15);
+        short randomID = DnsResolver.getRandomId();
+
+        Bootstrap bootstrap = bootstrapFactory.getBootstrapTcp(requestType.getType());
 
         final Channel ch;
         try
         {
-            ch = tcpTxtBootstrap.connect(dnsIp, 53).sync().channel();
+            ch = bootstrap.connect(dnsIp, 53).sync().channel();
         }
         catch( Throwable cte )
         {
-            log.error("fail to connect dns server, {}", cte.getMessage());
             throw new DnsException(
                     String.format("fail to connect dns server, %s", cte.getMessage()));
         }
 
         DnsQuery query = new DefaultDnsQuery(randomID, DnsOpCode.QUERY)
-                .setRecord(DnsSection.QUESTION, new DefaultDnsQuestion(domainName, DnsRecordType.TXT))
+                .setRecord(DnsSection.QUESTION, new DefaultDnsQuestion(domainName, requestType.getType()))
                 .setRecursionDesired(true);
 
         try
@@ -75,7 +66,6 @@ public class DnsResolverTXT implements DnsResolver
             //timeout occured
             if( !bSuccess )
             {
-                log.error("fail to resolve domain by TCP, timed out, domain : {}, dns : {}", domainName, dnsIp);
                 ch.close().sync();
                 throw new DnsException(String.format(
                         "fail to resolve domain by TCP, timed out, domain : %s, dns : %s", domainName, dnsIp));
@@ -83,29 +73,36 @@ public class DnsResolverTXT implements DnsResolver
         }
         catch( InterruptedException ie )
         {
-            log.error("fail to resolve TXT record, interrupted exception");
-            throw new DnsException("fail to resolve TXT record, interrupted exception");
+            throw new DnsException("fail to resolve record, interrupted exception");
         }
 
-        return ch.attr(TXT_RECORD_RESULT).get();
+        //DnsResult result = ch.attr(requestType.getAttributeKey()).get();
+        DnsResult result = ch.attr(RECORD_RESULT).get();
+        if( result.getRecords().isEmpty() )
+            throw new DnsException(ch.attr(ERROR_MSG).get());
+
+        return result;
     }
 
-    public List<DnsResult> resolveDomainByUdp(String domainName) throws DnsException
+    @Override
+    public DnsResult resolveDomainByUdp(String domainName,
+                                        RequestType requestType) throws DnsException
     {
         String dnsIp = smtpConfig.getString("smtp.dns.ip", "8.8.8.8");
         Integer dnsTimeout = smtpConfig.getInt("smtp.dns.timeout", 10);
 
-        short randomID = (short)new Random().nextInt(1 << 15);
+        short randomID = DnsResolver.getRandomId();
 
         InetSocketAddress addr = new InetSocketAddress(dnsIp, 53);
+        Bootstrap bootstrap = bootstrapFactory.getBootstrapUdp(requestType.getType());
 
         final Channel ch;
         try
         {
-            ch = udpTxtBootstrap.bind(0).sync().channel();
+            ch = bootstrap.bind(0).sync().channel();
 
             DnsQuery query = new DatagramDnsQuery(null, addr, randomID)
-                    .setRecord(DnsSection.QUESTION, new DefaultDnsQuestion(domainName, DnsRecordType.TXT))
+                    .setRecord(DnsSection.QUESTION, new DefaultDnsQuestion(domainName, requestType.getType()))
                     .setRecursionDesired(true);
 
             ch.writeAndFlush(query).sync().addListener(
@@ -121,7 +118,6 @@ public class DnsResolverTXT implements DnsResolver
             boolean bSuccess = ch.closeFuture().await(dnsTimeout, TimeUnit.SECONDS);
             if( !bSuccess )
             {
-                log.error("fail to resolve domain by UDP, timed out, domain : {}, dns : {}", domainName, dnsIp);
                 ch.close().sync();
                 throw new DnsException(String.format(
                         "fail to resolve domain by UDP, timed out, domain : %s, dns : %s", domainName, dnsIp));
@@ -129,10 +125,13 @@ public class DnsResolverTXT implements DnsResolver
         }
         catch( InterruptedException ie )
         {
-            log.error("fail to resolve TXT record, interrupted exception");
-            throw new DnsException("fail to resolve TXT record, interrupted exception");
+            throw new DnsException("fail to resolve record, interrupted exception");
         }
 
-        return ch.attr(TXT_RECORD_RESULT).get();
+        DnsResult result = ch.attr(RECORD_RESULT).get();
+        if( result.getRecords().isEmpty() )
+            throw new DnsException(ch.attr(ERROR_MSG).get());
+
+        return result;
     }
 }

@@ -1,7 +1,8 @@
 package com.mail.smtp.mta.handler;
 
-import com.mail.smtp.exception.SmtpException;
+import com.mail.smtp.data.ResponseData;
 import com.mail.smtp.data.SmtpData;
+import com.mail.smtp.exception.SmtpException;
 import com.mail.smtp.mta.authentication.CheckAuth;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -13,7 +14,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -35,7 +35,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
 
     protected boolean auth()
     {
-        return this.checkAuth.checkAuth(userId, userPass);
+        return this.checkAuth.checkAuth(userId, userPass, smtpData.getRandomUID());
     }
 
     protected void replaceBaseHandler(ChannelHandlerContext ctx)
@@ -48,56 +48,57 @@ public class AuthHandler extends ChannelInboundHandlerAdapter
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
     {
         if( cause instanceof ReadTimeoutException )
-            log.error("exception occured, read timed out");
+            log.error("[{}] exception occured, read timed out", smtpData.getRandomUID());
         else if( cause instanceof SmtpException )
         {
-            log.error("exception occured, error code : {}, message : {}",
-                    ( (SmtpException) cause ).getErrorCode(), cause.getMessage());
-            ctx.writeAndFlush(( (SmtpException) cause ).getResponse());
+            log.error("[{}] exception occured, error code : {}, message : {}",
+                    smtpData.getRandomUID(), ( (SmtpException) cause ).getErrorCode(), cause.getMessage());
+            //ctx.writeAndFlush(( (SmtpException) cause ).getResponse());
+            ctx.writeAndFlush(new ResponseData(smtpData.getRandomUID(), ((SmtpException) cause).getResponse()));
         }
         else
-            log.error("exception occured, {}", cause.getMessage());
+            log.error("[{}] exception occured, {}", smtpData.getRandomUID(), cause.getMessage());
 
         if( log.isTraceEnabled() )
             cause.printStackTrace();
         ctx.close();
-        MDC.clear();
+        //MDC.clear();
     }
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx)
     {
-        log.trace("auth handler channel removed");
+        log.trace("[{}] auth handler channel removed", smtpData.getRandomUID());
     }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx)
     {
-        log.trace("auth handler channel unregistered");
+        log.trace("[{}] auth handler channel unregistered", smtpData.getRandomUID());
         replaceBaseHandler(ctx);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx)
     {
-        log.trace("auth handler channel active");
+        log.trace("[{}] auth handler channel active", smtpData.getRandomUID());
     }
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx)
     {
-        log.trace("auth handler channel registered");
+        log.trace("[{}] auth handler channel registered", smtpData.getRandomUID());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx)
     {
-        log.trace("auth handler channel inactive");
+        log.trace("[{}] auth handler channel inactive", smtpData.getRandomUID());
     }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt)
     {
-        log.trace("auth handler channel user event triggered");
+        log.trace("[{}] auth handler channel user event triggered", smtpData.getRandomUID());
     }
 }
