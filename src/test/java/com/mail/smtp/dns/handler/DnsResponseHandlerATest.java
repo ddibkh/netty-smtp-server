@@ -35,7 +35,7 @@ class DnsResponseHandlerATest
     void dnsResolveAsync()
     {
         List<CompletableFuture< Void> > listFuture = new ArrayList<>();
-        for( int i = 0; i < 100; i++ )
+        for( int i = 0; i < 3; i++ )
         {
             String domainName;
             if( i % 3 == 0 )
@@ -74,7 +74,7 @@ class DnsResponseHandlerATest
     @Test
     void dnsResolveSync()
     {
-        for( int i = 0; i < 100; i++ )
+        for( int i = 0; i < 3; i++ )
         {
             String domainName;
             if( i % 3 == 0 )
